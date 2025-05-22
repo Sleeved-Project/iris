@@ -1,0 +1,59 @@
+version: '3'
+
+tasks:
+  build:
+    desc: Build the Docker containers
+    cmds:
+      - docker-compose build --no-cache
+
+  up:
+    desc: Start the application
+    cmds:
+      - docker-compose up -d
+
+  down:
+    desc: Stop the application
+    cmds:
+      - docker-compose down
+
+  logs:
+    desc: View logs
+    cmds:
+      - docker-compose logs -f
+
+  lint:
+    desc: Run linting checks
+    cmds:
+      - docker-compose exec api flake8 .
+
+  format:
+    desc: Format the code with black and isort
+    cmds:
+      - docker-compose exec api black .
+      - docker-compose exec api isort .
+
+  # Apply test command when we have setup tests
+  # test:
+  #   desc: Run tests
+  #   cmds:
+  #     - docker-compose exec api pytest
+
+  shell:
+    desc: Open a shell in the API container
+    cmds:
+      - docker-compose exec api bash
+
+  restart:
+    desc: Restart the application
+    cmds:
+      - task: down
+      - task: up
+      - task: logs
+
+  rebuild:
+    desc: Rebuild and restart
+    cmds:
+      - task: down
+      - task: build
+      - task: up
+      - task: logs
