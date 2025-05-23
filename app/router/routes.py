@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.controllers import (api_info_controller, health_controller, root_controller)
+from app.controllers import api_info_controller, health_controller, root_controller
 from app.db.session import get_db
 
 # Create routers
