@@ -25,7 +25,7 @@ Iris is an image recognition microservice for the Sleeved ecosystem. It provides
 
 ### Available Commands
 
-This project uses [Task](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-sandbox/workbench/workbench.html) to simplify common development operations. All commands are defined in `Taskfile.yml` and execute operations within Docker containers, so you don't need to install any Python dependencies locally.
+This project uses [Task](https://taskfile.dev/) to simplify common development operations. All commands are defined in `Taskfile.yml` and execute operations within Docker containers, so you don't need to install any Python dependencies locally.
 
 | Command          | Description             | What it does                                      |
 | ---------------- | ----------------------- | ------------------------------------------------- |
@@ -38,6 +38,29 @@ This project uses [Task](vscode-file://vscode-app/Applications/Visual%20Studio%2
 | `task shell`   | Access container shell  | Opens a bash shell in the API container           |
 | `task restart` | Restart the application | Stops and starts all containers                   |
 | `task rebuild` | Rebuild and restart     | Rebuilds, restarts, and shows logs                |
+| `task setup-hooks` | Set up Git hooks | Installs pre-commit hook for code quality checks |
+
+### Pre-commit Hook Setup
+
+This project includes a pre-commit hook that automatically runs formatting and linting checks before each commit, ensuring high code quality across the team.
+
+**What it does:**
+- Formats your code with Black
+- Runs Flake8 linting checks
+- Prevents commits if linting fails
+- Adds formatted files back to staging
+
+**To set up the pre-commit hook:**
+
+```bash
+# Setup the hooks (only needs to be done once)
+task setup-hooks
+
+# Make sure Docker is running for the hooks to work
+task up
+```
+
+After setup, the hook will run automatically whenever you commit code. It requires Docker to be running to work properly, as it leverages the same Docker containers used for development.
 
 ## Project Structure
 
@@ -66,6 +89,9 @@ This project uses [Task](vscode-file://vscode-app/Applications/Visual%20Studio%2
 ├── pyproject.toml         # Python project configuration
 
 ├── requirements.txt       # Production dependencies
+
+├── scripts/               # Helper scripts
+│   └── pre-commit.sh      # Git pre-commit hook script
 
 └── Taskfile.yml           # Task runner configuration
 

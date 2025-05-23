@@ -27,7 +27,7 @@ tasks:
       - docker-compose exec api flake8 .
 
   format:
-    desc: Format the code with black and isort
+    desc: Format the code with black
     cmds:
       - docker-compose exec api black .
 
@@ -56,3 +56,11 @@ tasks:
       - task: build
       - task: up
       - task: logs
+
+  setup-hooks:
+      desc: Set up Git hooks without local dependencies
+      cmds:
+        - mkdir -p .git/hooks
+        - cp scripts/pre-commit.sh .git/hooks/pre-commit
+        - chmod +x .git/hooks/pre-commit
+        - echo "✅ Git hooks installed successfully! No pip install needed."
