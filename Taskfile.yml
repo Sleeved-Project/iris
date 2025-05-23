@@ -30,7 +30,6 @@ tasks:
     desc: Format the code with black and isort
     cmds:
       - docker-compose exec api black .
-      - docker-compose exec api isort .
 
   # Apply test command when we have setup tests
   # test:
