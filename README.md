@@ -30,8 +30,8 @@ This project uses [Task](https://taskfile.dev/) to simplify common development o
 | Command          | Description             | What it does                                      |
 | ---------------- | ----------------------- | ------------------------------------------------- |
 | `task build`   | Build Docker containers | Builds all service containers with `--no-cache` |
-| `task up`      | Start the application   | Starts all containers in detached mode            |
-| `task down`    | Stop the application    | Stops and removes all containers                  |
+| `task start`      | Start the application   | Starts all containers in detached mode            |
+| `task stop`    | Stop the application    | Stops and removes all containers                  |
 | `task logs`    | View logs               | Shows and follows logs from all containers        |
 | `task lint`    | Run linting checks      | Runs flake8 against the codebase                  |
 | `task format`  | Format code             | Runs black and isort to format code               |

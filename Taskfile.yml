@@ -6,12 +6,12 @@ tasks:
     cmds:
       - docker-compose build --no-cache
 
-  up:
+  start:
     desc: Start the application
     cmds:
       - docker-compose up -d
 
-  down:
+  stop:
     desc: Stop the application
     cmds:
       - docker-compose down
@@ -31,7 +31,7 @@ tasks:
     cmds:
       - docker-compose exec api black .
 
-  # Apply test command when we have setup tests
+  # Apply test command when we have setstart tests
   # test:
   #   desc: Run tests
   #   cmds:
@@ -45,16 +45,16 @@ tasks:
   restart:
     desc: Restart the application
     cmds:
-      - task: down
-      - task: up
+      - task: stop
+      - task: start
       - task: logs
 
   rebuild:
     desc: Rebuild and restart
     cmds:
-      - task: down
+      - task: stop
       - task: build
-      - task: up
+      - task: start
       - task: logs
 
   setup-hooks:
