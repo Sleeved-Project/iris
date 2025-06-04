@@ -1,20 +1,21 @@
 # Iris - Image Recognition Microservice
 
-Iris is an image recognition microservice for the Sleeved ecosystem. It provides a RESTful API for image analysis and recognition services.
+Iris is an image recognition microservice for the Sleeved ecosystem. It provides a RESTful API for image analysis and recognition services, specifically focused on card identification through perceptual hashing.
 
 ## Technologies
 
--**FastAPI**: Modern, fast web framework for building APIs in Python
+- **FastAPI**: Modern, fast web framework for building APIs in Python
+- **SQLAlchemy**: SQL toolkit and ORM
+- **Alembic**: Database migration tool
+- **MySQL**: Database
+- **Docker**: Containerization
+- **Task**: Task runner for development commands
+- **Black/Flake8/isort**: Code formatting and linting tools
 
--**SQLAlchemy**: SQL toolkit and ORM
+## Iris specific ports
 
--**MySQL**: Database
-
--**Docker**: Containerization
-
--**Task**: Task runner for development commands
-
--**Black/Flake8/isort**: Code formatting and linting tools
+- API: 8083 (http://localhost:8083)
+- Database: 3311 (MySQL)
 
 ## Development Setup
 
@@ -23,22 +24,64 @@ Iris is an image recognition microservice for the Sleeved ecosystem. It provides
 - Docker and Docker Compose
 - [Task](https://taskfile.dev/) task runner
 
-### Available Commands
+### Getting Started
+
+Complete setup (build containers, start services, run migrations) :
+
+```bash
+task setup
+```
+
+Or individual steps:
+```bash
+task build     # Build containers
+task start     # Start services
+task db:migrate:apply  # Apply migrations
+```
+
+
+## Available Commands
 
 This project uses [Task](https://taskfile.dev/) to simplify common development operations. All commands are defined in `Taskfile.yml` and execute operations within Docker containers, so you don't need to install any Python dependencies locally.
 
-| Command          | Description             | What it does                                      |
-| ---------------- | ----------------------- | ------------------------------------------------- |
-| `task build`   | Build Docker containers | Builds all service containers with `--no-cache` |
-| `task start`      | Start the application   | Starts all containers in detached mode            |
-| `task stop`    | Stop the application    | Stops and removes all containers                  |
-| `task logs`    | View logs               | Shows and follows logs from all containers        |
-| `task lint`    | Run linting checks      | Runs flake8 against the codebase                  |
-| `task format`  | Format code             | Runs black and isort to format code               |
-| `task shell`   | Access container shell  | Opens a bash shell in the API container           |
-| `task restart` | Restart the application | Stops and starts all containers                   |
-| `task rebuild` | Rebuild and restart     | Rebuilds, restarts, and shows logs                |
+
+### Application Management Commands
+
+| Command | Description | What it does |
+|---------|-------------|--------------|
+| `task build` | Build Docker containers | Builds all service containers with `--no-cache` |
+| `task start` | Start the application | Starts all containers in detached mode |
+| `task stop` | Stop the application | Stops and removes all containers |
+| `task logs` | View logs | Shows and follows logs from all containers |
+| `task restart` | Restart the application | Stops and starts all containers |
+| `task rebuild` | Rebuild and restart | Rebuilds, restarts, and shows logs |
+
+### Development Commands
+
+| Command | Description | What it does |
+|---------|-------------|--------------|
+| `task lint` | Run linting checks | Runs flake8 against the codebase |
+| `task format` | Format code | Runs black and isort to format code |
+| `task test` | Run tests | Runs pytest (can specify path with `-- tests/unit`) |
+| `task shell` | Access container shell | Opens a bash shell in the API container |
 | `task setup-hooks` | Set up Git hooks | Installs pre-commit hook for code quality checks |
+
+### Setup Commands
+
+| Command | Description | What it does |
+|---------|-------------|--------------|
+| `task setup` | Complete first-time setup | Builds containers, starts services, waits for DB readiness, applies migrations, and shows API info |
+
+### Database Commands
+
+| Command | Description | What it does |
+|---------|-------------|--------------|
+| `task db:migrate:generate` | Generate migration script | Creates a new Alembic migration based on model changes (e.g., `task db:migrate:generate -- "create card hash table"`) |
+| `task db:migrate:apply` | Apply all pending migrations | Runs Alembic upgrade to apply all migrations to the database |
+| `task db:migrate:revert` | Rollback the last migration | Reverts the most recent migration |
+| `task db:migrate:history` | Show migration history | Displays all migrations with their status |
+| `task db:migrate:current` | Show current revision | Shows the current migration revision |
+| `task db:shell` | Open a MySQL shell | Connects to the database with the MySQL client |
 
 ### Pre-commit Hook Setup
 

@@ -5,3 +5,4 @@ flake8
 black
 isort
 httpx==0.25.0
+alembic==1.12.1

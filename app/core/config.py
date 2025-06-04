@@ -10,11 +10,12 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
 
     DATABASE_URL: str = os.getenv(
-        "DATABASE_URL", "mysql+pymysql://user:password@mysql:3306/fastapi"
+        "DATABASE_URL", "mysql+pymysql://user:password@mysql:3306/iris-db"
     )
 
     class Config:
         env_file = ".env"
+        extra = "ignore"  # Add this line to ignore extra fields
 
 
 settings = Settings()
