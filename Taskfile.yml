@@ -31,11 +31,10 @@ tasks:
     cmds:
       - docker-compose exec api black .
 
-  # Apply test command when we have setstart tests
-  # test:
-  #   desc: Run tests
-  #   cmds:
-  #     - docker-compose exec api pytest
+  test:
+    desc: Run tests (can specify test path as parameter)
+    cmds:
+      - docker-compose exec api pytest {{.CLI_ARGS}}
 
   shell:
     desc: Open a shell in the API container

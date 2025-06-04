@@ -97,6 +97,14 @@ After setup, the hook will run automatically whenever you commit code. It requir
 
 ```
 
+## Documentation
+
+### Technical Resources
+- [Perceptual Hashing Algorithm Comparison](https://sleeved.atlassian.net/wiki/x/AgAgAQ) - Analysis of different perceptual hashing algorithms (aHash, pHash, dHash) and their application for card recognition
+
+### API Documentation
+API documentation is available at /docs or /redoc when the server is running
+
 ## Recommended VSCode Extensions
 
 For the best development experience, we recommend installing the following VSCode extensions:
