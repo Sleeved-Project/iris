@@ -100,6 +100,12 @@ tasks:
     cmds:
       - docker-compose exec mysql mysql -u user -ppassword iris-db
 
+  db:import-cards:
+    desc: Import sample card hashes into database
+    cmds:
+      - echo ">> Importing card hashes from sample data..."
+      - docker-compose exec api python -m scripts.card_importer.import_cards
+
   setup-hooks:
       desc: Set up Git hooks without local dependencies
       cmds:
