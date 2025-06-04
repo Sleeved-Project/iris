@@ -4,7 +4,7 @@ tasks:
   build:
     desc: Build the Docker containers
     cmds:
-      - docker-compose build --no-cache
+      - docker-compose build
 
   start:
     desc: Start the application
@@ -55,6 +55,50 @@ tasks:
       - task: build
       - task: start
       - task: logs
+
+  setup:
+    desc: Complete first-time setup (build, start, run migrations, show info)
+    cmds:
+      - echo ">> Starting Iris setup process..."
+      - task: build
+      - task: start
+      - echo ">> Waiting for database to be ready..."
+      - sleep 10
+      - task: db:migrate:apply
+      - echo ""
+      - echo ">> Setup complete! Iris is now running."
+      - echo ">> API available at http://localhost:8083/docs"
+      - echo ">> Database connection localhost:3311 (user/password)"
+
+  db:migrate:generate:
+    desc: Generate migration script based on model changes (e.g., task db:migrate:generate -- "create card hash table")
+    cmds:
+      - docker-compose exec api alembic revision --autogenerate -m "{{.CLI_ARGS}}"
+
+  db:migrate:apply:
+    desc: Apply all pending migrations
+    cmds:
+      - docker-compose exec api alembic upgrade head
+
+  db:migrate:revert:
+    desc: Rollback the last migration
+    cmds:
+      - docker-compose exec api alembic downgrade -1
+
+  db:migrate:history:
+    desc: Show migration history
+    cmds:
+      - docker-compose exec api alembic history --verbose
+
+  db:migrate:current:
+    desc: Show current migration revision
+    cmds:
+      - docker-compose exec api alembic current
+
+  db:shell:
+    desc: Open a MySQL shell
+    cmds:
+      - docker-compose exec mysql mysql -u user -ppassword iris-db
 
   setup-hooks:
       desc: Set up Git hooks without local dependencies

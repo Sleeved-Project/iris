@@ -4,25 +4,22 @@ services:
   api:
     build: .
     ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=mysql+pymysql://user:password@mysql:3306/fastapi
+      - "8083:8083"
+    env_file:
+      - .env
     depends_on:
       - mysql
     restart: always
     volumes:
       - .:/app
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn main:app --host 0.0.0.0 --port 8083 --reload
 
   mysql:
     image: mysql:8.0
-    environment:
-      - MYSQL_ROOT_PASSWORD=rootpassword
-      - MYSQL_DATABASE=fastapi
-      - MYSQL_USER=user
-      - MYSQL_PASSWORD=password
+    env_file:
+      - .env
     ports:
-      - "3306:3306"
+      - "3311:3306"
     volumes:
       - mysql_data:/var/lib/mysql
 
