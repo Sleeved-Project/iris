@@ -1,45 +1,45 @@
-version: '3'
+version: "3"
 
 tasks:
   build:
     desc: Build the Docker containers
     cmds:
-      - docker-compose build
+      - docker compose build
 
   start:
     desc: Start the application
     cmds:
-      - docker-compose up -d
+      - docker compose up -d
 
   stop:
     desc: Stop the application
     cmds:
-      - docker-compose down
+      - docker compose down
 
   logs:
     desc: View logs
     cmds:
-      - docker-compose logs -f
+      - docker compose logs -f
 
   lint:
     desc: Run linting checks
     cmds:
-      - docker-compose exec api flake8 .
+      - docker compose exec api flake8 .
 
   format:
     desc: Format the code with black
     cmds:
-      - docker-compose exec api black .
+      - docker compose exec api black .
 
   test:
     desc: Run tests (can specify test path as parameter)
     cmds:
-      - docker-compose exec api pytest {{.CLI_ARGS}}
+      - docker compose exec api pytest {{.CLI_ARGS}}
 
   shell:
     desc: Open a shell in the API container
     cmds:
-      - docker-compose exec api bash
+      - docker compose exec api bash
 
   restart:
     desc: Restart the application
@@ -73,37 +73,37 @@ tasks:
   db:migrate:generate:
     desc: Generate migration script based on model changes (e.g., task db:migrate:generate -- "create card hash table")
     cmds:
-      - docker-compose exec api alembic revision --autogenerate -m "{{.CLI_ARGS}}"
+      - docker compose exec api alembic revision --autogenerate -m "{{.CLI_ARGS}}"
 
   db:migrate:apply:
     desc: Apply all pending migrations
     cmds:
-      - docker-compose exec api alembic upgrade head
+      - docker compose exec api alembic upgrade head
 
   db:migrate:revert:
     desc: Rollback the last migration
     cmds:
-      - docker-compose exec api alembic downgrade -1
+      - docker compose exec api alembic downgrade -1
 
   db:migrate:history:
     desc: Show migration history
     cmds:
-      - docker-compose exec api alembic history --verbose
+      - docker compose exec api alembic history --verbose
 
   db:migrate:current:
     desc: Show current migration revision
     cmds:
-      - docker-compose exec api alembic current
+      - docker compose exec api alembic current
 
   db:shell:
     desc: Open a MySQL shell
     cmds:
-      - docker-compose exec mysql mysql -u user -ppassword iris-db
+      - docker compose exec mysql mysql -u user -ppassword iris-db
 
   setup-hooks:
-      desc: Set up Git hooks without local dependencies
-      cmds:
-        - mkdir -p .git/hooks
-        - cp scripts/pre-commit.sh .git/hooks/pre-commit
-        - chmod +x .git/hooks/pre-commit
-        - echo "✅ Git hooks installed successfully! No pip install needed."
+    desc: Set up Git hooks without local dependencies
+    cmds:
+      - mkdir -p .git/hooks
+      - cp scripts/pre-commit.sh .git/hooks/pre-commit
+      - chmod +x .git/hooks/pre-commit
+      - echo "✅ Git hooks installed successfully! No pip install needed."
