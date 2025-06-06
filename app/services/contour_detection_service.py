@@ -1,7 +1,10 @@
 import cv2
 import numpy as np
 import os
-from app.services.image_preprocessing_service  import preprocess_image  # Import du service 1
+from app.services.image_preprocessing_service import (
+    preprocess_image,
+)  # Import du service 1
+
 
 def order_points(pts):
     rect = np.zeros((4, 2), dtype="float32")
@@ -13,6 +16,7 @@ def order_points(pts):
     rect[3] = pts[np.argmax(diff)]
     return rect
 
+
 def four_point_transform(image, pts):
     rect = order_points(pts.reshape(4, 2))
     (tl, tr, br, bl) = rect
@@ -22,18 +26,24 @@ def four_point_transform(image, pts):
     heightA = np.linalg.norm(tr - br)
     heightB = np.linalg.norm(tl - bl)
     maxHeight = max(int(heightA), int(heightB))
-    dst = np.array([
-        [0, 0],
-        [maxWidth - 1, 0],
-        [maxWidth - 1, maxHeight - 1],
-        [0, maxHeight - 1]
-    ], dtype="float32")
+    dst = np.array(
+        [[0, 0], [maxWidth - 1, 0], [maxWidth - 1, maxHeight - 1], [0, maxHeight - 1]],
+        dtype="float32",
+    )
     M = cv2.getPerspectiveTransform(rect, dst)
     warped = cv2.warpPerspective(image, M, (maxWidth, maxHeight))
     return warped
 
-def detect_cards(image_path, method='canny', min_area=5000, aspect_ratio_range=(0.6, 0.85),
-                 debug=False, output_dir=None, common_output_dir=None):
+
+def detect_cards(
+    image_path,
+    method="canny",
+    min_area=5000,
+    aspect_ratio_range=(0.6, 0.85),
+    debug=False,
+    output_dir=None,
+    common_output_dir=None,
+):
 
     image, edged = preprocess_image(image_path, method=method)
     orig = image.copy()
@@ -70,11 +80,16 @@ def detect_cards(image_path, method='canny', min_area=5000, aspect_ratio_range=(
             if debug and output_dir:
                 os.makedirs(output_dir, exist_ok=True)
                 image_name = os.path.splitext(os.path.basename(image_path))[0]
-                cv2.imwrite(os.path.join(output_dir, f"{image_name}_card_{i}.png"), warped)
+                cv2.imwrite(
+                    os.path.join(output_dir, f"{image_name}_card_{i}.png"), warped
+                )
 
             if debug and common_output_dir:
                 os.makedirs(common_output_dir, exist_ok=True)
                 image_name = os.path.splitext(os.path.basename(image_path))[0]
-                cv2.imwrite(os.path.join(common_output_dir, f"{image_name}_card_{i}.png"), warped)
+                cv2.imwrite(
+                    os.path.join(common_output_dir, f"{image_name}_card_{i}.png"),
+                    warped,
+                )
 
     return warped_images, card_contours
