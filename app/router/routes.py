@@ -6,14 +6,22 @@ from app.controllers import (
     hash_controller,
     health_controller,
     root_controller,
+    scan_controller,
 )
 from app.db.session import get_db
+
 from app.dependencies.image_request_validators import (
     validate_image_url,
     validate_image_upload,
-    ValidationResult,
+    ValidationResult as ImageValidationResult,
 )
+
+from app.dependencies.scan_request_validators import (
+    validate_scan_image_upload,
+)
+
 from app.schemas.image_schemas import ImageHashResponse, ImageHashRequest
+from app.schemas.scan_schemas import ScanResponse
 
 
 root_router = APIRouter(tags=["root"])
@@ -37,6 +45,23 @@ def api_info():
     return api_info_controller.get_api_info()
 
 
+@images_router.post("/scan/detect", response_model=ScanResponse)
+async def scan_image_file(file: UploadFile = File(...), debug: bool = False):
+    """
+    Detect and extract card-like objects from an uploaded image file.
+
+    Upload a file using multipart/form-data.
+
+    Args:
+        file: Image file (JPG, PNG, ...)
+        debug: Optional flag to save debug images (default False)
+    """
+    validated_input = await validate_scan_image_upload(file)
+    return await scan_controller.detect_card(
+        validated_input=validated_input, debug=debug
+    )
+
+
 @images_router.post("/hash/url", response_model=ImageHashResponse)
 async def hash_image_url(request: ImageHashRequest):
     """
@@ -53,7 +78,7 @@ async def hash_image_url(request: ImageHashRequest):
     """
     # Validate the URL (raises HTTPException if invalid)
     url = await validate_image_url(str(request.url))
-    validated_input = ValidationResult(url=url)
+    validated_input = ImageValidationResult(url=url)
     return await hash_controller.hash_image(validated_input=validated_input)
 
 
@@ -68,7 +93,7 @@ async def hash_image_file(file: UploadFile = File(...)):
     Supported formats: JPG, PNG, GIF, WEBP
     """
     validated_file = await validate_image_upload(file)
-    validated_input = ValidationResult(file=validated_file)
+    validated_input = ImageValidationResult(file=validated_file)
     return await hash_controller.hash_image(validated_input=validated_input)
 
 
