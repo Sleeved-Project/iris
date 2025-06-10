@@ -45,7 +45,7 @@ def api_info():
     return api_info_controller.get_api_info()
 
 
-@images_router.post("/scan/file", response_model=ScanResponse)
+@images_router.post("/scan/detect", response_model=ScanResponse)
 async def scan_image_file(file: UploadFile = File(...), debug: bool = False):
     """
     Detect and extract card-like objects from an uploaded image file.
@@ -57,7 +57,7 @@ async def scan_image_file(file: UploadFile = File(...), debug: bool = False):
         debug: Optional flag to save debug images (default False)
     """
     validated_input = await validate_scan_image_upload(file)
-    return await scan_controller.scan_image(
+    return await scan_controller.detect_card(
         validated_input=validated_input, debug=debug
     )
 

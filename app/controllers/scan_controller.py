@@ -10,7 +10,7 @@ OUTPUT_DIR = "outputs"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
-async def scan_image(
+async def detect_card(
     validated_input: ScanValidationResult, debug: bool = False
 ) -> ScanResponse:
     try:
