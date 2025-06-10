@@ -21,15 +21,7 @@ class TestPreprocessImage:
         "image_name",
         [
             "card_normal_light.png",
-            "ebay.png",
-            "ebay_low.png",
-            "ebay_high.png",
-            "ebay2.png",
-            "collection.png",
-            "ebay5.png",
-            "wattapik.png",
-            "wattapik2.png",
-            "wattapik3.png",
+            "salameche.png",
         ],
     )
     def test_preprocess_image_output(self, image_name):

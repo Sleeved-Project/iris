@@ -7,21 +7,27 @@ from app.controllers import (
     health_controller,
     root_controller,
     scan_controller,
+    analysis_controller,
 )
 from app.db.session import get_db
 
 from app.dependencies.image_request_validators import (
     validate_image_url,
     validate_image_upload,
-    ValidationResult as ImageValidationResult,
+    ValidationResult, # Import ValidationResult directly from image_request_validators
 )
 
 from app.dependencies.scan_request_validators import (
     validate_scan_image_upload,
+    # Remove ValidationResult import from here if it existed, as it's not defined here
+)
+from app.dependencies.analysis_request_validators import (
+    validate_analysis_image_upload,
 )
 
 from app.schemas.image_schemas import ImageHashResponse, ImageHashRequest
 from app.schemas.scan_schemas import ScanResponse
+from app.schemas.analysis_schemas import AnalysisResponse
 
 
 root_router = APIRouter(tags=["root"])
@@ -70,7 +76,7 @@ async def hash_image_url(request: ImageHashRequest):
     Send a JSON object with the URL:
     ```json
     {
-        "url": "https://example.com/image.jpg"
+        "url": "[https://example.com/image.jpg](https://example.com/image.jpg)"
     }
     ```
 
@@ -78,7 +84,7 @@ async def hash_image_url(request: ImageHashRequest):
     """
     # Validate the URL (raises HTTPException if invalid)
     url = await validate_image_url(str(request.url))
-    validated_input = ImageValidationResult(url=url)
+    validated_input = ValidationResult(url=url) # Use ValidationResult directly
     return await hash_controller.hash_image(validated_input=validated_input)
 
 
@@ -93,11 +99,33 @@ async def hash_image_file(file: UploadFile = File(...)):
     Supported formats: JPG, PNG, GIF, WEBP
     """
     validated_file = await validate_image_upload(file)
-    validated_input = ImageValidationResult(file=validated_file)
+    validated_input = ValidationResult(file=validated_file) # Use ValidationResult directly
     return await hash_controller.hash_image(validated_input=validated_input)
 
 
-def include_routes(app):
+@images_router.post("/analyze", response_model=AnalysisResponse)
+async def analyze_image_file(
+    file: UploadFile = File(...),
+    debug: bool = False,
+    db: Session = Depends(get_db) # Add the database dependency here
+):
+    """
+    Detects card-like objects in an uploaded image, extracts them, and calculates their perceptual hashes.
+
+    Upload a file using multipart/form-data.
+
+    Args:
+        file: Image file (JPG, PNG, ...)
+        debug: Optional flag to save debug images and intermediate steps (default False)
+        db: Database session dependency.
+    """
+    validated_input = await validate_analysis_image_upload(file)
+    return await analysis_controller.analyze_image(
+        validated_input=validated_input, debug=debug, db=db # Pass db to the controller
+    )
+
+
+def include_routes(app): 
     app.include_router(root_router)
     app.include_router(health_router)
     app.include_router(api_v1_router)
