@@ -78,9 +78,7 @@ class ImageHashService:
         """
         total_distance = ImageHashService.hamming_distance(hash1_str, hash2_str)
 
-        max_possible_distance = (
-            len(hash1_str) * 4
-        )
+        max_possible_distance = len(hash1_str) * 4
         if max_possible_distance == 0:
             return total_distance, 0.0
 
