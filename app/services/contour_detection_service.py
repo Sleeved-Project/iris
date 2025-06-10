@@ -3,7 +3,7 @@ import numpy as np
 import os
 from app.services.image_preprocessing_service import (
     preprocess_image,
-)  # Import du service 1
+)
 
 
 def order_points(pts):
