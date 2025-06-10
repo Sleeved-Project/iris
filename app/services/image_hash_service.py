@@ -1,14 +1,16 @@
-# app/services/image_hash_service.py
 import imagehash
 from fastapi import UploadFile
 from PIL import Image
 
-from app.core.constants import HASH_SIZE # Ensure HASH_SIZE is correctly defined (e.g., 16)
+from app.core.constants import (
+    HASH_SIZE,
+)
 from app.services.image_extraction_service import image_extraction_service
 
 
 class ImageHashService:
-    """Service for calculating perceptual hashes of images and comparing them."""
+    """Service for calculating perceptual hashes
+    of images and comparing them."""
 
     @staticmethod
     async def hash_from_url(url: str) -> str:
@@ -62,21 +64,23 @@ class ImageHashService:
         Assumes hashes are of equal length.
         """
         if len(hash1_str) != len(hash2_str):
-            raise ValueError("Hash lengths are not equal for Hamming distance calculation.")
+            raise ValueError(
+                "Hash lengths are not equal for Hamming distance calculation."
+            )
         return sum(ch1 != ch2 for ch1, ch2 in zip(hash1_str, hash2_str))
 
     @staticmethod
     def calculate_similarity_metrics(hash1_str: str, hash2_str: str) -> (int, float):
         """
-        Calculates the Hamming distance and similarity percentage between two concatenated hash strings.
+        Calculates the Hamming distance and similarity percentage
+        between two concatenated hash strings.
         Returns (total_hamming_distance, similarity_percentage).
         """
         total_distance = ImageHashService.hamming_distance(hash1_str, hash2_str)
 
-        # Max possible distance is the total number of bits in the concatenated hash.
-        # Each hex character represents 4 bits. So, length of hash string * 4.
-        max_possible_distance = len(hash1_str) * 4 # Assuming HASH_SIZE (e.g., 16) is used for imagehash, meaning 16x16 bits per hash, so 2 * 16*16 = 512 bits total. Each hex char is 4 bits. Length of hash string is 128. So 128 * 4 = 512 bits.
-
+        max_possible_distance = (
+            len(hash1_str) * 4
+        )
         if max_possible_distance == 0:
             return total_distance, 0.0
 

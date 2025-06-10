@@ -14,7 +14,7 @@ from app.db.session import get_db
 from app.dependencies.image_request_validators import (
     validate_image_url,
     validate_image_upload,
-    ValidationResult, # Import ValidationResult directly from image_request_validators
+    ValidationResult,  # Import ValidationResult directly from image_request_validators
 )
 
 from app.dependencies.scan_request_validators import (
@@ -84,7 +84,7 @@ async def hash_image_url(request: ImageHashRequest):
     """
     # Validate the URL (raises HTTPException if invalid)
     url = await validate_image_url(str(request.url))
-    validated_input = ValidationResult(url=url) # Use ValidationResult directly
+    validated_input = ValidationResult(url=url)  # Use ValidationResult directly
     return await hash_controller.hash_image(validated_input=validated_input)
 
 
@@ -99,7 +99,9 @@ async def hash_image_file(file: UploadFile = File(...)):
     Supported formats: JPG, PNG, GIF, WEBP
     """
     validated_file = await validate_image_upload(file)
-    validated_input = ValidationResult(file=validated_file) # Use ValidationResult directly
+    validated_input = ValidationResult(
+        file=validated_file
+    )  # Use ValidationResult directly
     return await hash_controller.hash_image(validated_input=validated_input)
 
 
@@ -107,10 +109,11 @@ async def hash_image_file(file: UploadFile = File(...)):
 async def analyze_image_file(
     file: UploadFile = File(...),
     debug: bool = False,
-    db: Session = Depends(get_db) # Add the database dependency here
+    db: Session = Depends(get_db),  # Add the database dependency here
 ):
     """
-    Detects card-like objects in an uploaded image, extracts them, and calculates their perceptual hashes.
+    Detects card-like objects in an uploaded image, extracts them,
+    and calculates their perceptual hashes.
 
     Upload a file using multipart/form-data.
 
@@ -121,11 +124,11 @@ async def analyze_image_file(
     """
     validated_input = await validate_analysis_image_upload(file)
     return await analysis_controller.analyze_image(
-        validated_input=validated_input, debug=debug, db=db # Pass db to the controller
+        validated_input=validated_input, debug=debug, db=db  # Pass db to the controller
     )
 
 
-def include_routes(app): 
+def include_routes(app):
     app.include_router(root_router)
     app.include_router(health_router)
     app.include_router(api_v1_router)
