@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 # Import du script à tester
-from app.services.card_detector import detect_cards
+from app.services.contour_detection_service import detect_cards
 
 TEST_ASSETS_DIR = os.path.join(
     os.path.dirname(__file__), "..", "..", "assets", "test_images"
