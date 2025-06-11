@@ -14,12 +14,11 @@ from app.db.session import get_db
 from app.dependencies.image_request_validators import (
     validate_image_url,
     validate_image_upload,
-    ValidationResult,  # Import ValidationResult directly from image_request_validators
+    ValidationResult,
 )
 
 from app.dependencies.scan_request_validators import (
     validate_scan_image_upload,
-    # Remove ValidationResult import from here if it existed, as it's not defined here
 )
 from app.dependencies.analysis_request_validators import (
     validate_analysis_image_upload,
@@ -76,7 +75,7 @@ async def hash_image_url(request: ImageHashRequest):
     Send a JSON object with the URL:
     ```json
     {
-        "url": "[https://example.com/image.jpg](https://example.com/image.jpg)"
+        "url": "https://example.com/image.jpg"
     }
     ```
 

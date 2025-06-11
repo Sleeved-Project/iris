@@ -1,4 +1,3 @@
-# app/models/card_hash.py
 from sqlalchemy import Column, String, DateTime, Index, func
 from app.db.session import Base
 
