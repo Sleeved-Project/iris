@@ -33,61 +33,65 @@ task setup
 ```
 
 Or individual steps:
+
 ```bash
 task build     # Build containers
 task start     # Start services
 task db:migrate:apply  # Apply migrations
 ```
 
+### Import database
+
+Download the Iris Database on
 
 ## Available Commands
 
 This project uses [Task](https://taskfile.dev/) to simplify common development operations. All commands are defined in `Taskfile.yml` and execute operations within Docker containers, so you don't need to install any Python dependencies locally.
 
-
 ### Application Management Commands
 
-| Command | Description | What it does |
-|---------|-------------|--------------|
-| `task build` | Build Docker containers | Builds all service containers with `--no-cache` |
-| `task start` | Start the application | Starts all containers in detached mode |
-| `task stop` | Stop the application | Stops and removes all containers |
-| `task logs` | View logs | Shows and follows logs from all containers |
-| `task restart` | Restart the application | Stops and starts all containers |
-| `task rebuild` | Rebuild and restart | Rebuilds, restarts, and shows logs |
+| Command        | Description             | What it does                                    |
+| -------------- | ----------------------- | ----------------------------------------------- |
+| `task build`   | Build Docker containers | Builds all service containers with `--no-cache` |
+| `task start`   | Start the application   | Starts all containers in detached mode          |
+| `task stop`    | Stop the application    | Stops and removes all containers                |
+| `task logs`    | View logs               | Shows and follows logs from all containers      |
+| `task restart` | Restart the application | Stops and starts all containers                 |
+| `task rebuild` | Rebuild and restart     | Rebuilds, restarts, and shows logs              |
 
 ### Development Commands
 
-| Command | Description | What it does |
-|---------|-------------|--------------|
-| `task lint` | Run linting checks | Runs flake8 against the codebase |
-| `task format` | Format code | Runs black and isort to format code |
-| `task test` | Run tests | Runs pytest (can specify path with `-- tests/unit`) |
-| `task shell` | Access container shell | Opens a bash shell in the API container |
-| `task setup-hooks` | Set up Git hooks | Installs pre-commit hook for code quality checks |
+| Command            | Description            | What it does                                        |
+| ------------------ | ---------------------- | --------------------------------------------------- |
+| `task lint`        | Run linting checks     | Runs flake8 against the codebase                    |
+| `task format`      | Format code            | Runs black and isort to format code                 |
+| `task test`        | Run tests              | Runs pytest (can specify path with `-- tests/unit`) |
+| `task shell`       | Access container shell | Opens a bash shell in the API container             |
+| `task setup-hooks` | Set up Git hooks       | Installs pre-commit hook for code quality checks    |
 
 ### Setup Commands
 
-| Command | Description | What it does |
-|---------|-------------|--------------|
+| Command      | Description               | What it does                                                                                       |
+| ------------ | ------------------------- | -------------------------------------------------------------------------------------------------- |
 | `task setup` | Complete first-time setup | Builds containers, starts services, waits for DB readiness, applies migrations, and shows API info |
 
 ### Database Commands
 
-| Command | Description | What it does |
-|---------|-------------|--------------|
-| `task db:migrate:generate` | Generate migration script | Creates a new Alembic migration based on model changes (e.g., `task db:migrate:generate -- "create card hash table"`) |
-| `task db:migrate:apply` | Apply all pending migrations | Runs Alembic upgrade to apply all migrations to the database |
-| `task db:migrate:revert` | Rollback the last migration | Reverts the most recent migration |
-| `task db:migrate:history` | Show migration history | Displays all migrations with their status |
-| `task db:migrate:current` | Show current revision | Shows the current migration revision |
-| `task db:shell` | Open a MySQL shell | Connects to the database with the MySQL client |
+| Command                    | Description                  | What it does                                                                                                          |
+| -------------------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `task db:migrate:generate` | Generate migration script    | Creates a new Alembic migration based on model changes (e.g., `task db:migrate:generate -- "create card hash table"`) |
+| `task db:migrate:apply`    | Apply all pending migrations | Runs Alembic upgrade to apply all migrations to the database                                                          |
+| `task db:migrate:revert`   | Rollback the last migration  | Reverts the most recent migration                                                                                     |
+| `task db:migrate:history`  | Show migration history       | Displays all migrations with their status                                                                             |
+| `task db:migrate:current`  | Show current revision        | Shows the current migration revision                                                                                  |
+| `task db:shell`            | Open a MySQL shell           | Connects to the database with the MySQL client                                                                        |
 
 ### Pre-commit Hook Setup
 
 This project includes a pre-commit hook that automatically runs formatting and linting checks before each commit, ensuring high code quality across the team.
 
 **What it does:**
+
 - Formats your code with Black
 - Runs Flake8 linting checks
 - Prevents commits if linting fails
@@ -143,9 +147,11 @@ After setup, the hook will run automatically whenever you commit code. It requir
 ## Documentation
 
 ### Technical Resources
+
 - [Perceptual Hashing Algorithm Comparison](https://sleeved.atlassian.net/wiki/x/AgAgAQ) - Analysis of different perceptual hashing algorithms (aHash, pHash, dHash) and their application for card recognition
 
 ### API Documentation
+
 API documentation is available at /docs or /redoc when the server is running
 
 ## Recommended VSCode Extensions
