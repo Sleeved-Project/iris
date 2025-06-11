@@ -28,7 +28,8 @@ class TestCardDetector:
         "image_name",
         [
             "card_normal_light.png",
-            "salameche.png",
+            "koraidon.png",
+            "carmache.png",
         ],
     )
     def test_detect_cards(self, image_name):

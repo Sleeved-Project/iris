@@ -34,7 +34,7 @@ tasks:
   test:
     desc: Run tests (can specify test path as parameter)
     cmds:
-      - docker compose exec api pytest {{.CLI_ARGS}}
+      - docker compose exec api pytest -s {{.CLI_ARGS}}
 
   shell:
     desc: Open a shell in the API container
