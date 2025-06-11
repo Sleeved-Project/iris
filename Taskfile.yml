@@ -98,7 +98,7 @@ tasks:
   db:shell:
     desc: Open a MySQL shell
     cmds:
-      - docker compose exec mysql mysql -u user -ppassword iris-db
+      - docker compose exec mysql mysql -u user -ppassword iris_db
 
   db:import-cards:
     desc: Import sample card hashes into database
