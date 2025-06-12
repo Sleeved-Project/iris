@@ -8,7 +8,7 @@ class CardHash(Base):
     Optimized for fast lookups by both card id and hash value.
     """
 
-    __tablename__ = "Card_hash"
+    __tablename__ = "card_hash"
 
     id = Column(
         String(255),

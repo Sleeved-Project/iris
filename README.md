@@ -40,6 +40,10 @@ task start     # Start services
 task db:migrate:apply  # Apply migrations
 ```
 
+### Import database
+
+Download the Iris Database on [this link](https://sleeved.atlassian.net/wiki/spaces/SleevedConception/pages/26902536/Base+de+donn+es+Iris)
+
 ## Available Commands
 
 This project uses [Task](https://taskfile.dev/) to simplify common development operations. All commands are defined in `Taskfile.yml` and execute operations within Docker containers, so you don't need to install any Python dependencies locally.
