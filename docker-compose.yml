@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   api:
@@ -13,6 +13,10 @@ services:
     volumes:
       - .:/app
     command: uvicorn main:app --host 0.0.0.0 --port 8083 --reload
+    networks:
+      - default
+      - sleeved-network
+    container_name: iris-api
 
   mysql:
     image: mysql:8.0
@@ -22,6 +26,13 @@ services:
       - "3311:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - default
+
+networks:
+  default:
+  sleeved-network:
+    external: true
 
 volumes:
   mysql_data:
