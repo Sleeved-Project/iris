@@ -21,7 +21,8 @@ class TestPreprocessImage:
         "image_name",
         [
             "card_normal_light.png",
-            "salameche.png",
+            "koraidon.png",
+            "carmache.png",
         ],
     )
     def test_preprocess_image_output(self, image_name):
