@@ -33,145 +33,213 @@ def four_point_transform(image, pts):
     return warped
 
 
-def _detect_cards_with_method(
-    image_path,
-    method,
-    min_area,
-    aspect_ratio_range,
-    debug,
-    output_dir,
-    common_output_dir,
-    orig_image,
-    image_area,
-):
-    """
-    Fonction utilitaire pour tenter la détection avec une méthode spécifique.
-    Retourne (warped_images, card_contours) ou ([], []) si aucune carte n'est trouvée.
-    """
-    print(f"--- Tentative de détection avec la méthode '{method}' ---")
-    _, edged = preprocess_image(image_path, method=method)
-
-    contours, _ = cv2.findContours(edged, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    temp_card_contours = []
-    temp_warped_images = []
-
-    if not contours:
-        print(f"  Aucun contour trouvé avec la méthode '{method}'.")
-        return [], []
-
-    contours = sorted(contours, key=cv2.contourArea, reverse=True)
-
-    for i, cnt in enumerate(contours):
-        # Vous pouvez réactiver les logs détaillés ici si besoin pendant le débogage.
-        # print(f"\n--- Analyse du contour n°{i+1} (Méthode: {method}) ---")
-
-        peri = cv2.arcLength(cnt, True)
-        approx = cv2.approxPolyDP(cnt, 0.04 * peri, True)  # Maintenir la tolérance
-
-        if len(approx) == 4 and cv2.isContourConvex(approx):
-            area = cv2.contourArea(approx)
-            if area < min_area or area / image_area > 0.95:
-                # print(f"  REJETÉ (Méthode {method}) : Aire hors plage.")
-                continue
-
-            ((_, _), (width_rect, height_rect), _) = cv2.minAreaRect(approx)
-            if width_rect == 0 or height_rect == 0:
-                # print(f"  REJETÉ (Méthode {method}) : Largeur ou hauteur nulle.")
-                continue
-
-            aspect_ratio = min(width_rect, height_rect) / max(width_rect, height_rect)
-            if not (aspect_ratio_range[0] <= aspect_ratio <= aspect_ratio_range[1]):
-                # print(f"  REJETÉ (Méthode {method}) : Rapport d'aspect hors plage.")
-                continue
-
-            # print(f"  ACCEPTÉ (Méthode {method}) : Contour n°{i+1}
-            # détecté comme carte !")
-            temp_card_contours.append(approx)
-            warped = four_point_transform(orig_image, approx)
-            temp_warped_images.append(warped)
-
-            # Enregistrement des images de débogage avec le nom de la méthode
-            if debug and output_dir:
-                os.makedirs(output_dir, exist_ok=True)
-                image_name = os.path.splitext(os.path.basename(image_path))[0]
-                cv2.imwrite(
-                    os.path.join(output_dir, f"{image_name}_card_{method}_{i}.png"),
-                    warped,
-                )
-            if debug and common_output_dir:
-                os.makedirs(common_output_dir, exist_ok=True)
-                image_name = os.path.splitext(os.path.basename(image_path))[0]
-                cv2.imwrite(
-                    os.path.join(
-                        common_output_dir, f"{image_name}_card_{method}_{i}.png"
-                    ),
-                    warped,
-                )
-        # else:
-        # print(f"  REJETÉ (Méthode {method}) : Pas 4 coins (a {len(approx)}
-        # coins) ou non convexe.")
-
-    return temp_warped_images, temp_card_contours
-
-
 def detect_cards(
     image_path,
-    method="canny",  # Le paramètre 'method' sera le point de départ
-    min_area=5000,
-    aspect_ratio_range=(0.6, 0.95),
-    debug=False,
+    debug=True,
     output_dir=None,
     common_output_dir=None,
+    method="adaptive",
+    min_area=3000,
+    aspect_ratio_range=(0.5, 0.9),
 ):
+    """
+    Detects card-like objects in images.
+    Works with various card borders on different backgrounds.
 
-    image, _ = preprocess_image(
-        image_path, method="canny"
-    )  # On charge l'image originale une seule fois
-    orig = image.copy()
-    h, w = image.shape[:2]
-    image_area = h * w
+    Args:
+        image_path: Path to the image file
+        debug: Whether to save debug images
+        output_dir: Directory for debug output
+        common_output_dir: Directory for processing steps
+        method: Preprocessing method ('adaptive', 'pokemon', 'gradient', 'canny')
+        min_area: Minimum area for contour to be considered a card
+        aspect_ratio_range: Allowed aspect ratio range for cards
 
-    # Liste des méthodes à essayer, dans l'ordre de préférence
-    methods_to_try = [method]  # Commencer par la méthode demandée
-    if method != "canny":
-        methods_to_try.append(
-            "canny"
-        )  # S'assurer que canny est essayé si ce n'est pas la première
-    if "light" not in methods_to_try:
-        methods_to_try.append("light")
-    if "spec" not in methods_to_try:
-        methods_to_try.append("spec")
+    Returns:
+        tuple: (list of warped card images, list of contours)
+    """
+    image_name = os.path.basename(image_path)
+    image_base = os.path.splitext(image_name)[0]
 
-    final_warped_images = []
-    final_card_contours = []
+    # Create debug directories
+    debug_dirs = {}
+    if debug:
+        debug_dirs["output"] = output_dir or os.path.join(
+            "assets/test_images/debug_output", image_base
+        )
+        debug_dirs["common"] = common_output_dir or os.path.join(
+            "assets/test_images/processing_steps"
+        )
+        debug_dirs["contours"] = os.path.join(
+            debug_dirs["common"], "contours", image_base
+        )
+        debug_dirs["masks"] = os.path.join(debug_dirs["common"], "masks", image_base)
 
-    print(f"--- Détection de cartes pour l'image : {os.path.basename(image_path)} ---")
-    print(f"Séquence de méthodes de détection : {methods_to_try}")
+        for dir_path in debug_dirs.values():
+            os.makedirs(dir_path, exist_ok=True)
 
-    for current_method in methods_to_try:
-        if not final_card_contours:  # Seulement si aucune carte n'a encore été trouvée
-            temp_warped_images, temp_card_contours = _detect_cards_with_method(
-                image_path=image_path,
-                method=current_method,
-                min_area=min_area,
-                aspect_ratio_range=aspect_ratio_range,
-                debug=debug,
-                output_dir=output_dir,
-                common_output_dir=common_output_dir,
-                orig_image=orig,  # Passer l'image originale
-                image_area=image_area,
-            )
-            if temp_card_contours:
-                final_warped_images = temp_warped_images
-                final_card_contours = temp_card_contours
-                print(
-                    f"Méthode '{current_method}' a détecté {len(final_card_contours)} carte(s). Arrêt de la recherche."
-                )
-                break  # Arrêter dès qu'une méthode trouve des cartes
-        else:
-            break  # Si des cartes ont été trouvées dans une itération précédente, arrêter
+    # Preprocess image
+    orig_image, processed = preprocess_image(image_path, method=method)
 
-    print(
-        f"\n--- Fin de la détection. Total de cartes détectées : {len(final_card_contours)} ---"
+    # Save debug images
+    if debug:
+        cv2.imwrite(
+            os.path.join(debug_dirs["common"], f"{image_base}_original.jpg"), orig_image
+        )
+        cv2.imwrite(
+            os.path.join(debug_dirs["masks"], f"{image_base}_{method}_mask.jpg"),
+            processed,
+        )
+
+    # Find contours
+    contours, hierarchy = cv2.findContours(
+        processed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
     )
-    return final_warped_images, final_card_contours
+
+    print(f"Nombre de contours bruts trouvés: {len(contours)}")
+
+    # Filter and sort contours
+    filtered_contours = []
+    warped_images = []
+
+    if contours:
+        # Sort by descending area
+        contours = sorted(contours, key=cv2.contourArea, reverse=True)
+
+        # Debug image with all contours
+        if debug:
+            all_contours_img = orig_image.copy()
+            cv2.drawContours(all_contours_img, contours, -1, (0, 255, 0), 2)
+            cv2.imwrite(
+                os.path.join(debug_dirs["contours"], f"{image_base}_all_contours.jpg"),
+                all_contours_img,
+            )
+
+            # Show only top 5 contours
+            top_contours_img = orig_image.copy()
+            for i, cnt in enumerate(contours[:5]):
+                color = (0, 255 - i * 40, i * 40)
+                cv2.drawContours(top_contours_img, [cnt], -1, color, 3)
+                # Add contour number and area
+                M = cv2.moments(cnt)
+                if M["m00"] != 0:
+                    cx = int(M["m10"] / M["m00"])
+                    cy = int(M["m01"] / M["m00"])
+                    area = cv2.contourArea(cnt)
+                    cv2.putText(
+                        top_contours_img,
+                        f"#{i+1}: {area:.0f}",
+                        (cx - 40, cy),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.8,
+                        color,
+                        2,
+                    )
+            cv2.imwrite(
+                os.path.join(debug_dirs["contours"], f"{image_base}_top5_contours.jpg"),
+                top_contours_img,
+            )
+
+        # Process contours
+        for i, cnt in enumerate(contours):
+            if i >= 10:  # Limit to first 10 contours to save time
+                break
+
+            # Approximate contour
+            peri = cv2.arcLength(cnt, True)
+            approx = cv2.approxPolyDP(cnt, 0.02 * peri, True)
+
+            # Check if approximated contour has 4 points (rectangle)
+            if len(approx) == 4:
+                # Get rectangle dimensions
+                area = cv2.contourArea(approx)
+                (_, _), (width, height), angle = cv2.minAreaRect(approx)
+
+                # Avoid division by zero
+                if min(width, height) > 0:
+                    aspect_ratio = min(width, height) / max(width, height)
+                    min_ratio, max_ratio = aspect_ratio_range
+
+                    # Log contour info for debugging
+                    print(
+                        f"Contour #{i}: points={len(approx)}, "
+                        f"convexe={cv2.isContourConvex(approx)}, "
+                        f"area={area:.2f}, ratio={aspect_ratio:.2f}, "
+                        f"angle={angle:.1f}"
+                    )
+
+                    if debug:
+                        # Create image to visualize this contour
+                        contour_debug = orig_image.copy()
+                        cv2.drawContours(contour_debug, [approx], -1, (0, 0, 255), 3)
+
+                        # Add contour info to image
+                        info_text = (
+                            f"Area: {area:.0f}, Ratio: {aspect_ratio:.2f}\n"
+                            f"Convex: {cv2.isContourConvex(approx)}, "
+                            f"Points: {len(approx)}"
+                        )
+                        y0, dy = 50, 30
+                        for j, line in enumerate(info_text.split("\n")):
+                            y = y0 + j * dy
+                            cv2.putText(
+                                contour_debug,
+                                line,
+                                (50, y),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                1,
+                                (0, 0, 255),
+                                2,
+                            )
+
+                        cv2.imwrite(
+                            os.path.join(
+                                debug_dirs["contours"], f"{image_base}_contour_{i}.jpg"
+                            ),
+                            contour_debug,
+                        )
+
+                    # Check card criteria
+                    if (
+                        area >= min_area
+                        and min_ratio <= aspect_ratio <= max_ratio
+                        and cv2.isContourConvex(approx)
+                    ):
+
+                        filtered_contours.append(approx)
+
+                        # Transform perspective
+                        warped = four_point_transform(orig_image, approx)
+                        warped_images.append(warped)
+
+                        # Save debug images
+                        if debug:
+                            # Accepted contour with green border
+                            accepted_img = orig_image.copy()
+                            cv2.drawContours(accepted_img, [approx], -1, (0, 255, 0), 3)
+                            cv2.putText(
+                                accepted_img,
+                                "CARTE DÉTECTÉE!",
+                                (50, 50),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                1,
+                                (0, 255, 0),
+                                2,
+                            )
+                            cv2.imwrite(
+                                os.path.join(
+                                    debug_dirs["output"], f"{image_base}_card_{i}.jpg"
+                                ),
+                                accepted_img,
+                            )
+
+                            # Extracted card
+                            cv2.imwrite(
+                                os.path.join(
+                                    debug_dirs["output"], f"{image_base}_warped_{i}.jpg"
+                                ),
+                                warped,
+                            )
+
+    print(f"Cartes détectées: {len(filtered_contours)}")
+    return warped_images, filtered_contours

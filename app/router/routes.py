@@ -108,7 +108,7 @@ async def hash_image_file(file: UploadFile = File(...)):
 async def analyze_image_file(
     file: UploadFile = File(...),
     debug: bool = False,
-    db: Session = Depends(get_db),  # Add the database dependency here
+    db: Session = Depends(get_db),
 ):
     """
     Detects card-like objects in an uploaded image, extracts them,
@@ -123,7 +123,7 @@ async def analyze_image_file(
     """
     validated_input = await validate_analysis_image_upload(file)
     return await analysis_controller.analyze_image(
-        validated_input=validated_input, debug=debug, db=db  # Pass db to the controller
+        validated_input=validated_input, debug=debug, db=db
     )
 
 

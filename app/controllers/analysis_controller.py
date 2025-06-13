@@ -36,6 +36,14 @@ async def analyze_image(
     Compares the calculated hashes with hashes stored in the database.
     """
     temp_image_path = None
+
+    debug_output_dir = "assets/test_images/debug_output"
+    common_output_dir = "assets/test_images/processing_steps"
+
+    if debug:
+        os.makedirs(debug_output_dir, exist_ok=True)
+        os.makedirs(common_output_dir, exist_ok=True)
+
     try:
         if validated_input.file:
             contents = await validated_input.file.read()
@@ -48,15 +56,24 @@ async def analyze_image(
         if not temp_image_path or not os.path.exists(temp_image_path):
             raise ValueError("Image file not found for analysis.")
 
-        warped_images, _ = detect_cards(
-            temp_image_path,
-            method="canny",
-            min_area=5000,
-            aspect_ratio_range=(0.6, 0.85),
-            debug=debug,
-            output_dir="/tmp/debug_output",
-            common_output_dir="/tmp/common_debug_output",
-        )
+        # Use our designated debug directories
+        methods_to_try = ["adaptive"]
+        warped_images = []
+        contours = []
+
+        for method in methods_to_try:
+            warped_images, contours = detect_cards(
+                temp_image_path,
+                method=method,
+                min_area=3000,
+                aspect_ratio_range=(0.5, 0.9),
+                debug=debug,
+                output_dir=f"{debug_output_dir}/{method}" if debug else None,
+                common_output_dir=common_output_dir if debug else None,
+            )
+            if warped_images:
+                print(f"Méthode '{method}' a trouvé {len(warped_images)} cartes.")
+                break
 
         # Fetch all hashes from the database once
         db_hashes = db.query(CardHash).all()

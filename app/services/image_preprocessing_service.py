@@ -1,56 +1,75 @@
-# image_preprocessing_service.py
 import cv2
-import numpy as np  # Importez numpy si vous utilisez np.array ou d'autres fonctions numpy ici, même si ce n'est pas le cas directement pour les paramètres Canny/kernel.
+import numpy as np
+
+# Preprocessing configuration for multi-color detection
+preprocessing_config = {
+    "color_ranges": [
+        # Format: name, color_space, lower_bound, upper_bound
+        ("yellow", "hsv", [15, 20, 100], [45, 255, 255]),
+        ("blue", "hsv", [90, 50, 50], [130, 255, 255]),
+        ("black", "hsv", [0, 0, 0], [180, 255, 80]),
+    ],
+    "dilate_kernel": (5, 5),
+    "dilate_iterations": 2,
+    "erode_iterations": 1,
+    "canny_threshold1": 50,
+    "canny_threshold2": 150,
+    "close_kernel_size": (15, 15),
+}
 
 
-def preprocess_image(image_path, method="canny"):
+def preprocess_image(image_path, method=None):
+    """
+    Preprocesses an image to detect card contours using multi-color approach.
+    """
+    if not image_path or not isinstance(image_path, str):
+        raise ValueError("Image path must be a valid string")
+
     image = cv2.imread(image_path)
     if image is None:
         raise FileNotFoundError(f"Image not found: {image_path}")
 
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    return process_multi_color(image, preprocessing_config)
 
-    # Définition des paramètres pour chaque méthode dans un dictionnaire
-    # Chaque clé est le nom de la méthode, et la valeur est un dictionnaire de ses paramètres
-    # incluant (gaussian_blur_kernel, canny_threshold1, canny_threshold2, close_kernel_size)
-    processing_configs = {
-        "canny": {
-            "gaussian_blur_kernel": (9, 9),
-            "canny_threshold1": 70,
-            "canny_threshold2": 200,
-            "close_kernel_size": (15, 15),
-        },
-        "light": {
-            "gaussian_blur_kernel": (5, 5),  # Moins de flou pour plus de détails
-            "canny_threshold1": 40,
-            "canny_threshold2": 100,
-            "close_kernel_size": (7, 7),  # Kernel plus petit pour fermeture
-        },
-        "spec": {
-            "gaussian_blur_kernel": (
-                9,
-                9,
-            ),  # Peut être ajusté si "spec" a besoin de plus/moins de flou
-            "canny_threshold1": 30,
-            "canny_threshold2": 150,
-            "close_kernel_size": (20, 20),  # Kernel encore plus grand
-        },
-    }
 
-    # Récupérer la configuration pour la méthode demandée
-    config = processing_configs.get(method)
-    if config is None:
-        raise ValueError(
-            f"Méthode de prétraitement '{method}' non supportée. Méthodes disponibles : {list(processing_configs.keys())}"
-        )
+def process_multi_color(image, config):
+    """
+    Processes image to detect contours of multiple color ranges
+    """
+    if image is None or image.size == 0:
+        return None, None
 
-    # Appliquer les paramètres de la configuration choisie
-    blurred = cv2.GaussianBlur(gray, config["gaussian_blur_kernel"], 0)
-    edged = cv2.Canny(blurred, config["canny_threshold1"], config["canny_threshold2"])
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, config["close_kernel_size"])
-    edged = cv2.morphologyEx(edged, cv2.MORPH_CLOSE, kernel)
+    combined_mask = None
 
-    return (
-        image,
-        edged,
+    for _, color_space, lower, upper in config["color_ranges"]:
+        if color_space == "hsv":
+            color_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        else:
+            color_image = image
+
+        mask = cv2.inRange(color_image, np.array(lower), np.array(upper))
+
+        if combined_mask is None:
+            combined_mask = mask
+        else:
+            combined_mask = cv2.bitwise_or(combined_mask, mask)
+
+    if combined_mask is None:
+        return image, np.zeros_like(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY))
+
+    kernel = np.ones(config["dilate_kernel"], np.uint8)
+    combined_mask = cv2.dilate(
+        combined_mask, kernel, iterations=config["dilate_iterations"]
     )
+    combined_mask = cv2.erode(
+        combined_mask, kernel, iterations=config["erode_iterations"]
+    )
+
+    edges = cv2.Canny(
+        combined_mask, config["canny_threshold1"], config["canny_threshold2"]
+    )
+
+    close_kernel = np.ones(config["close_kernel_size"], np.uint8)
+    edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, close_kernel)
+
+    return image, edges
