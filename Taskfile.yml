@@ -52,7 +52,7 @@ tasks:
   start:
     desc: Start the application
     cmds:
-      - docker compose up -d
+      - docker compose up
 
   stop:
     desc: Stop the application
@@ -98,20 +98,6 @@ tasks:
       - task: build
       - task: start
       - task: logs
-
-  setup:
-    desc: Complete first-time setup (build, start, run migrations, show info)
-    cmds:
-      - echo ">> Starting Iris setup process..."
-      - task: build
-      - task: start
-      - echo ">> Waiting for database to be ready..."
-      - sleep 10
-      - task: db:migrate:apply
-      - echo ""
-      - echo ">> Setup complete! Iris is now running."
-      - echo ">> API available at http://localhost:8083/docs"
-      - echo ">> Database connection localhost:3311 (user/password)"
 
   db:migrate:generate:
     desc: Generate migration script based on model changes (e.g., task db:migrate:generate -- "create card hash table")
