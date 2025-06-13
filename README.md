@@ -23,6 +23,17 @@ Iris is an image recognition microservice for the Sleeved ecosystem. It provides
 
 - Docker and Docker Compose
 - [Task](https://taskfile.dev/) task runner
+- Git LFS
+
+### Git LFS
+
+Large data files are send on github with Git LFS. Git Large File Storage (LFS) replaces large files such as audio samples, videos, datasets, and graphics with text pointers inside Git, while storing the file contents on a remote server like GitHub.com or GitHub Enterprise.
+
+If you want push large file data run **before push**
+
+```bash
+git lfs push --all origin
+```
 
 ### Getting Started
 
