@@ -71,9 +71,9 @@ This project uses [Task](https://taskfile.dev/) to simplify common development o
 
 ### Setup Commands
 
-| Command      | Description               | What it does                                                                                       |
-| ------------ | ------------------------- | -------------------------------------------------------------------------------------------------- |
-| `task setup` | Complete first-time setup | Builds containers, starts services, waits for DB readiness, applies migrations, and shows API info |
+| Command      | Description               | What it does                                                                                                       |
+| ------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `task setup` | Complete first-time setup | Create network, Builds containers, starts services, waits for DB readiness, applies migrations, and shows API info |
 
 ### Database Commands
 

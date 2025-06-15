@@ -1,12 +1,65 @@
 version: "3"
 
 tasks:
+  default:
+    desc: Display available commands
+    cmds:
+      - task --list-all
+    silent: true
+
+  # Setup commands
+  setup:
+    desc: Complete first-time setup (network, build, start, run migrations, show info)
+    cmds:
+      - echo ">> Starting Iris setup process..."
+      - task: network:create
+      - task: build
+      - task: start
+      - echo ">> Waiting for database to be ready..."
+      - sleep 10
+      - task: db:migrate:apply
+      - echo ""
+      - echo ">> Setup complete! Iris is now running."
+      - echo ">> API available at http://localhost:8083/docs"
+      - echo ">> Database connection localhost:3311 (user/password)"
+
+  setup-hooks:
+    desc: Set up Git hooks without local dependencies
+    cmds:
+      - mkdir -p .git/hooks
+      - cp scripts/pre-commit.sh .git/hooks/pre-commit
+      - chmod +x .git/hooks/pre-commit
+      - echo "✅ Git hooks installed successfully! No pip install needed."
+
+  # Network commands
+  network:create:
+    desc: Create the external network if it does not exist
+    cmds:
+      - docker network inspect sleeved-network || docker network create sleeved-network
+
+  network:info:
+    desc: Display network information
+    cmds:
+      - docker network ls
+      - docker network inspect sleeved-network
+
+  network:remove:
+    desc: Remove the external network
+    cmds:
+      - docker network rm sleeved-network
+
+  # Application commands
   build:
     desc: Build the Docker containers
     cmds:
       - docker compose build
 
   start:
+    desc: Start the application
+    cmds:
+      - docker compose up
+
+  start:standalone:
     desc: Start the application
     cmds:
       - docker compose up -d
@@ -34,7 +87,7 @@ tasks:
   test:
     desc: Run tests (can specify test path as parameter)
     cmds:
-      - docker compose exec api pytest {{.CLI_ARGS}}
+      - docker compose exec api pytest -s {{.CLI_ARGS}}
 
   shell:
     desc: Open a shell in the API container
@@ -56,20 +109,7 @@ tasks:
       - task: start
       - task: logs
 
-  setup:
-    desc: Complete first-time setup (build, start, run migrations, show info)
-    cmds:
-      - echo ">> Starting Iris setup process..."
-      - task: build
-      - task: start
-      - echo ">> Waiting for database to be ready..."
-      - sleep 10
-      - task: db:migrate:apply
-      - echo ""
-      - echo ">> Setup complete! Iris is now running."
-      - echo ">> API available at http://localhost:8083/docs"
-      - echo ">> Database connection localhost:3311 (user/password)"
-
+  # Application commands
   db:migrate:generate:
     desc: Generate migration script based on model changes (e.g., task db:migrate:generate -- "create card hash table")
     cmds:
@@ -105,11 +145,3 @@ tasks:
     cmds:
       - echo ">> Importing card hashes from sample data..."
       - docker-compose exec api python -m scripts.card_importer.import_cards
-
-  setup-hooks:
-    desc: Set up Git hooks without local dependencies
-    cmds:
-      - mkdir -p .git/hooks
-      - cp scripts/pre-commit.sh .git/hooks/pre-commit
-      - chmod +x .git/hooks/pre-commit
-      - echo "✅ Git hooks installed successfully! No pip install needed."

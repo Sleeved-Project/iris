@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 from app.db.models.card_hash import CardHash
-from app.db.session import SessionLocal, init_db
+from app.db.session import SessionLocal
 from app.services.image_hash_service import image_hash_service
 
 # Add project root to path so we can import app modules
@@ -26,9 +26,6 @@ async def import_cards(json_file=None, small_images=True):
         json_file = Path(__file__).parent / "cards_data.json"
 
     logging.info(f"Reading cards from {json_file}")
-
-    # Initialize the database if needed
-    init_db()
 
     # Open JSON file
     try:
