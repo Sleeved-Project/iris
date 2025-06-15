@@ -116,7 +116,7 @@ def _detect_cards_with_method(
 
 def detect_cards(
     image_path,
-    method="canny",  # Le paramètre 'method' sera le point de départ
+    method="canny",
     min_area=5000,
     aspect_ratio_range=(0.6, 0.95),
     debug=False,
@@ -124,19 +124,14 @@ def detect_cards(
     common_output_dir=None,
 ):
 
-    image, _ = preprocess_image(
-        image_path, method="canny"
-    )  # On charge l'image originale une seule fois
+    image, _ = preprocess_image(image_path, method="canny")
     orig = image.copy()
     h, w = image.shape[:2]
     image_area = h * w
 
-    # Liste des méthodes à essayer, dans l'ordre de préférence
-    methods_to_try = [method]  # Commencer par la méthode demandée
+    methods_to_try = [method]
     if method != "canny":
-        methods_to_try.append(
-            "canny"
-        )  # S'assurer que canny est essayé si ce n'est pas la première
+        methods_to_try.append("canny")
     if "light" not in methods_to_try:
         methods_to_try.append("light")
     if "spec" not in methods_to_try:
@@ -149,7 +144,7 @@ def detect_cards(
     print(f"Séquence de méthodes de détection : {methods_to_try}")
 
     for current_method in methods_to_try:
-        if not final_card_contours:  # Seulement si aucune carte n'a encore été trouvée
+        if not final_card_contours:
             temp_warped_images, temp_card_contours = _detect_cards_with_method(
                 image_path=image_path,
                 method=current_method,
@@ -158,20 +153,25 @@ def detect_cards(
                 debug=debug,
                 output_dir=output_dir,
                 common_output_dir=common_output_dir,
-                orig_image=orig,  # Passer l'image originale
+                orig_image=orig,
                 image_area=image_area,
             )
             if temp_card_contours:
                 final_warped_images = temp_warped_images
                 final_card_contours = temp_card_contours
                 print(
-                    f"Méthode '{current_method}' a détecté {len(final_card_contours)} carte(s). Arrêt de la recherche."
+                    (
+                        f"Méthode '{current_method}' a détecté "
+                        f"{len(final_card_contours)} carte(s). "
+                        "Arrêt de la recherche."
+                    )
                 )
-                break  # Arrêter dès qu'une méthode trouve des cartes
+                break
         else:
-            break  # Si des cartes ont été trouvées dans une itération précédente, arrêter
+            break
 
     print(
-        f"\n--- Fin de la détection. Total de cartes détectées : {len(final_card_contours)} ---"
+        f"\n--- Fin de la détection. Total de cartes détectées : "
+        f"{len(final_card_contours)} ---"
     )
     return final_warped_images, final_card_contours
