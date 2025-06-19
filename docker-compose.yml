@@ -12,6 +12,10 @@ services:
     volumes:
       - .:/app
     command: uvicorn main:app --host 0.0.0.0 --port 8083 --reload
+    networks:
+      - default
+      - sleeved-network
+    container_name: iris-api
 
   mysql:
     image: mysql:8.0

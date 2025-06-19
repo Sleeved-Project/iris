@@ -54,6 +54,16 @@ tasks:
     cmds:
       - docker compose up
 
+  start:standalone:
+    desc: Start the application
+    cmds:
+      - docker compose up -d
+
+  start:standalone:
+    desc: Start the application
+    cmds:
+      - docker compose up
+
   stop:
     desc: Stop the application
     cmds:
@@ -77,7 +87,7 @@ tasks:
   test:
     desc: Run tests (can specify test path as parameter)
     cmds:
-      - docker compose exec api pytest {{.CLI_ARGS}}
+      - docker compose exec api pytest -s {{.CLI_ARGS}}
 
   shell:
     desc: Open a shell in the API container
@@ -99,6 +109,7 @@ tasks:
       - task: start
       - task: logs
 
+  # Database commands
   db:migrate:generate:
     desc: Generate migration script based on model changes (e.g., task db:migrate:generate -- "create card hash table")
     cmds:
@@ -134,11 +145,3 @@ tasks:
     cmds:
       - echo ">> Importing card hashes from sample data..."
       - docker-compose exec api python -m scripts.card_importer.import_cards
-
-  setup-hooks:
-    desc: Set up Git hooks without local dependencies
-    cmds:
-      - mkdir -p .git/hooks
-      - cp scripts/pre-commit.sh .git/hooks/pre-commit
-      - chmod +x .git/hooks/pre-commit
-      - echo "✅ Git hooks installed successfully! No pip install needed."
