@@ -12,7 +12,7 @@ tasks:
     desc: Complete first-time setup (network, build, start, run migrations, show info)
     cmds:
       - echo ">> Starting Iris setup process..."
-      - task: network:create
+      - task: networks:create
       - task: build
       - task: start
       - echo ">> API available at http://localhost:8083/docs"
@@ -26,22 +26,25 @@ tasks:
       - chmod +x .git/hooks/pre-commit
       - echo "✅ Git hooks installed successfully! No pip install needed."
 
-  # Network commands
-  network:create:
+  # Networks commands
+  networks:create:
     desc: Create the external network if it does not exist
     cmds:
       - docker network inspect sleeved-network || docker network create sleeved-network
+      - docker network inspect looter-network || docker network create looter-network
 
-  network:info:
+  networks:info:
     desc: Display network information
     cmds:
       - docker network ls
       - docker network inspect sleeved-network
+      - docker network inspect looter-network
 
-  network:remove:
+  networks:remove:
     desc: Remove the external network
     cmds:
       - docker network rm sleeved-network
+      - docker network rm looter-network
 
   # Application commands
   build:
