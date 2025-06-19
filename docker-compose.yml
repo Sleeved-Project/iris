@@ -1,14 +1,13 @@
-version: "3"
-
 services:
   api:
     build: .
     ports:
       - "8083:8083"
+    depends_on:
+      mysql:
+        condition: service_healthy
     env_file:
       - .env
-    depends_on:
-      - mysql
     restart: always
     volumes:
       - .:/app
@@ -25,7 +24,12 @@ services:
     ports:
       - "3311:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - db_data:/var/lib/mysql
+      - ./iris_db_dump.sql:/docker-entrypoint-initdb.d/iris_db_dump.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
     networks:
       - default
 
@@ -35,4 +39,4 @@ networks:
     external: true
 
 volumes:
-  mysql_data:
+  db_data:
