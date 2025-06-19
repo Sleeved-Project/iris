@@ -46,9 +46,9 @@ task setup
 Or individual steps:
 
 ```bash
-task build     # Build containers
-task start     # Start services
-task db:migrate:apply  # Apply migrations
+task build
+task start
+task db:migrate:apply
 ```
 
 ### Import database
