@@ -23,11 +23,11 @@ Iris is an image recognition microservice for the Sleeved ecosystem. It provides
 
 - Docker and Docker Compose
 - [Task](https://taskfile.dev/) task runner
-- Git LFS
+- [Git LFS](https://git-lfs.com/) Large file versionning handler
 
 ### Git LFS
 
-Large data files are send on github with Git LFS. Git Large File Storage (LFS) replaces large files such as audio samples, videos, datasets, and graphics with text pointers inside Git, while storing the file contents on a remote server like GitHub.com or GitHub Enterprise.
+Large data files are send on github with [Git LFS](https://git-lfs.com/). Git Large File Storage (LFS) replaces large files such as audio samples, videos, datasets, and graphics with text pointers inside Git, while storing the file contents on a remote server like GitHub.com or GitHub Enterprise.
 
 If you want push large file data run **before push**
 
@@ -53,7 +53,31 @@ task db:migrate:apply
 
 ### Import database
 
-Download the Iris Database on [this link](https://sleeved.atlassian.net/wiki/spaces/SleevedConception/pages/26902536/Base+de+donn+es+Iris)
+For using api you need to import the database dump
+
+🔗 Download databse dump
+
+- [iris_db_v2.sql](https://sleeved.atlassian.net/wiki/spaces/SleevedConception/pages/26902536/Base+de+donn+es+Iris)
+
+💡 Copy-past and rename this dump into `iris_db_dump.sql` in the root folder of your iris project.
+
+📥 Import the dataset with this command
+
+```bash
+task: db:import
+```
+
+### Export database
+
+📤 Export the dataset with this command
+
+```bash
+task: db:export
+```
+
+💡 The dump export will be extract into `./iris_db_dump.sql`.
+
+‼️ If you run **looter scraping on atlas** don't forget to send the `iris_db_dump.sql` on github with git lfs.
 
 ## Available Commands
 
@@ -90,6 +114,8 @@ This project uses [Task](https://taskfile.dev/) to simplify common development o
 
 | Command                    | Description                  | What it does                                                                                                          |
 | -------------------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `task db:import`           | Import dump                  | Import dump into database from `./iris_db_dump.sql`                                                                   |
+| `task db:export`           | Export dump                  | Export dump from database into `./iris_db_dump.sql`                                                                   |
 | `task db:migrate:generate` | Generate migration script    | Creates a new Alembic migration based on model changes (e.g., `task db:migrate:generate -- "create card hash table"`) |
 | `task db:migrate:apply`    | Apply all pending migrations | Runs Alembic upgrade to apply all migrations to the database                                                          |
 | `task db:migrate:revert`   | Rollback the last migration  | Reverts the most recent migration                                                                                     |

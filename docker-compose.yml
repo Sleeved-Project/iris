@@ -15,27 +15,45 @@ services:
     networks:
       - default
       - sleeved-network
+      - looter-network
     container_name: iris-api
 
   mysql:
     image: mysql:8.0
+    restart: always
     env_file:
       - .env
     ports:
       - "3311:3306"
     volumes:
       - db_data:/var/lib/mysql
-      - ./iris_db_dump.sql:/docker-entrypoint-initdb.d/iris_db_dump.sql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${MYSQL_ROOT_PASSWORD}",
+          "--silent",
+        ]
+      interval: 10s
+      timeout: 5s
       retries: 10
+      start_period: 60s
     networks:
       - default
+      - looter-network
+    container_name: iris-db
 
 networks:
   default:
   sleeved-network:
+    external: true
+  looter-network:
     external: true
 
 volumes:

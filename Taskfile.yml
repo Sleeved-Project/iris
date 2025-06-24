@@ -12,7 +12,7 @@ tasks:
     desc: Complete first-time setup (network, build, start, run migrations, show info)
     cmds:
       - echo ">> Starting Iris setup process..."
-      - task: network:create
+      - task: networks:create
       - task: build
       - task: start
       - echo ">> API available at http://localhost:8083/docs"
@@ -26,22 +26,25 @@ tasks:
       - chmod +x .git/hooks/pre-commit
       - echo "✅ Git hooks installed successfully! No pip install needed."
 
-  # Network commands
-  network:create:
+  # Networks commands
+  networks:create:
     desc: Create the external network if it does not exist
     cmds:
       - docker network inspect sleeved-network || docker network create sleeved-network
+      - docker network inspect looter-network || docker network create looter-network
 
-  network:info:
+  networks:info:
     desc: Display network information
     cmds:
       - docker network ls
       - docker network inspect sleeved-network
+      - docker network inspect looter-network
 
-  network:remove:
+  networks:remove:
     desc: Remove the external network
     cmds:
       - docker network rm sleeved-network
+      - docker network rm looter-network
 
   # Application commands
   build:
@@ -110,6 +113,26 @@ tasks:
       - task: logs
 
   # Database commands
+  db:import:
+    desc: Import database from dump file
+    cmds:
+      - echo "Importing database from dump file..."
+      - |
+        source .env && \
+        echo "🔄 Starting import... " && \
+        (docker compose exec -T mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" $MYSQL_DATABASE < ./iris_db_dump.sql 2>&1) && \
+        echo "✅ Import completed with success !"
+
+  db:export:
+    desc: Export database into dump file
+    cmds:
+      - echo "Exporting database into iris_db_dump.sql..."
+      - |
+        source .env && \
+        echo "🔄 Starting export... " && \
+        (docker compose exec -T mysql mysqldump --databases $MYSQL_DATABASE -uroot -p"$MYSQL_ROOT_PASSWORD" > ./iris_db_dump.sql 2>/dev/null) && \
+        echo "✅ Export completed with success into ./iris_db_dump.sql !"
+        
   db:migrate:generate:
     desc: Generate migration script based on model changes (e.g., task db:migrate:generate -- "create card hash table")
     cmds:
