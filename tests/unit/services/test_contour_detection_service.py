@@ -28,8 +28,24 @@ class TestCardDetector:
         "image_name",
         [
             "card_normal_light.png",
-            "koraidon.png",
-            "carmache.png",
+            "test_card_0_20250629_214455.jpg",
+            "test_card_1_20250629_214456.jpg",
+            "test_card_2_20250629_214456.jpg",
+            "test_card_3_20250629_214456.jpg",
+            "test_card_4_20250629_214456.jpg",
+            "test_card_5_20250629_214456.jpg",
+            "test_card_6_20250629_214456.jpg",
+            "test_card_7_20250629_214456.jpg",
+            "test_card_8_20250629_214456.jpg",
+            "test_card_9_20250629_214456.jpg",
+            "test_card_10_20250629_214456.jpg",
+            "test_card_11_20250629_214456.jpg",
+            "test_card_12_20250629_214456.jpg",
+            "test_card_13_20250629_214456.jpg",
+            "test_card_14_20250629_214456.jpg",
+            "test_card_15_20250629_214456.jpg",
+            "test_card_16_20250629_214456.jpg",
+            "test_card_17_20250629_214456.jpg",
         ],
     )
     def test_detect_cards(self, image_name):
@@ -40,7 +56,7 @@ class TestCardDetector:
         warped_images, contours = detect_cards(
             image_path,
             debug=True,
-            method="canny",
+            method="canny",  # Utilisation de la méthode "canny" pour le test
             output_dir=output_dir,
             common_output_dir=TEST_COMMON_RESULTS_DIR,  # Ajout du dossier commun
         )

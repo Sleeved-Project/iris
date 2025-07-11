@@ -44,12 +44,12 @@ def _detect_cards_with_method(
     orig_image,
     image_area,
 ):
-    """
-    Fonction utilitaire pour tenter la détection avec une méthode spécifique.
-    Retourne (warped_images, card_contours) ou ([], []) si aucune carte n'est trouvée.
-    """
     print(f"--- Tentative de détection avec la méthode '{method}' ---")
-    _, edged = preprocess_image(image_path, method=method)
+    orig_image, edged = preprocess_image(image_path, method=method)
+
+    contour_dir = "contour_output"
+    os.makedirs(contour_dir, exist_ok=True)
+    image_name = os.path.splitext(os.path.basename(image_path))[0]
 
     contours, _ = cv2.findContours(edged, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     temp_card_contours = []
@@ -62,54 +62,49 @@ def _detect_cards_with_method(
     contours = sorted(contours, key=cv2.contourArea, reverse=True)
 
     for i, cnt in enumerate(contours):
-        # Vous pouvez réactiver les logs détaillés ici si besoin pendant le débogage.
-        # print(f"\n--- Analyse du contour n°{i+1} (Méthode: {method}) ---")
-
         peri = cv2.arcLength(cnt, True)
-        approx = cv2.approxPolyDP(cnt, 0.04 * peri, True)  # Maintenir la tolérance
+        approx = cv2.approxPolyDP(cnt, 0.04 * peri, True)
 
         if len(approx) == 4 and cv2.isContourConvex(approx):
             area = cv2.contourArea(approx)
             if area < min_area or area / image_area > 0.95:
-                # print(f"  REJETÉ (Méthode {method}) : Aire hors plage.")
                 continue
 
             ((_, _), (width_rect, height_rect), _) = cv2.minAreaRect(approx)
             if width_rect == 0 or height_rect == 0:
-                # print(f"  REJETÉ (Méthode {method}) : Largeur ou hauteur nulle.")
                 continue
 
             aspect_ratio = min(width_rect, height_rect) / max(width_rect, height_rect)
             if not (aspect_ratio_range[0] <= aspect_ratio <= aspect_ratio_range[1]):
-                # print(f"  REJETÉ (Méthode {method}) : Rapport d'aspect hors plage.")
                 continue
 
-            # print(f"  ACCEPTÉ (Méthode {method}) : Contour n°{i+1}
-            # détecté comme carte !")
             temp_card_contours.append(approx)
             warped = four_point_transform(orig_image, approx)
             temp_warped_images.append(warped)
 
-            # Enregistrement des images de débogage avec le nom de la méthode
             if debug and output_dir:
                 os.makedirs(output_dir, exist_ok=True)
-                image_name = os.path.splitext(os.path.basename(image_path))[0]
                 cv2.imwrite(
                     os.path.join(output_dir, f"{image_name}_card_{method}_{i}.png"),
                     warped,
                 )
             if debug and common_output_dir:
                 os.makedirs(common_output_dir, exist_ok=True)
-                image_name = os.path.splitext(os.path.basename(image_path))[0]
                 cv2.imwrite(
                     os.path.join(
                         common_output_dir, f"{image_name}_card_{method}_{i}.png"
                     ),
                     warped,
                 )
-        # else:
-        # print(f"  REJETÉ (Méthode {method}) : Pas 4 coins (a {len(approx)}
-        # coins) ou non convexe.")
+
+    if debug and temp_card_contours:
+        debug_img = orig_image.copy()
+        cv2.drawContours(debug_img, temp_card_contours, -1, (0, 255, 0), 3)
+        debug_path = os.path.join(
+            contour_dir, f"{image_name}_contours_drawn_{method}.png"
+        )
+        cv2.imwrite(debug_path, debug_img)
+        print(f"Image avec contours dessinés sauvegardée dans : {debug_path}")
 
     return temp_warped_images, temp_card_contours
 
@@ -123,7 +118,6 @@ def detect_cards(
     output_dir=None,
     common_output_dir=None,
 ):
-
     image, _ = preprocess_image(image_path, method="canny")
     orig = image.copy()
     h, w = image.shape[:2]
@@ -132,6 +126,8 @@ def detect_cards(
     methods_to_try = [method]
     if method != "canny":
         methods_to_try.append("canny")
+    if "precise" not in methods_to_try:
+        methods_to_try.append("precise")
     if "light" not in methods_to_try:
         methods_to_try.append("light")
     if "spec" not in methods_to_try:
@@ -160,18 +156,13 @@ def detect_cards(
                 final_warped_images = temp_warped_images
                 final_card_contours = temp_card_contours
                 print(
-                    (
-                        f"Méthode '{current_method}' a détecté "
-                        f"{len(final_card_contours)} carte(s). "
-                        "Arrêt de la recherche."
-                    )
+                    f"""Méthode '{current_method}' a détecté
+                    {len(final_card_contours)} carte(s). Arrêt de la recherche."""
                 )
                 break
-        else:
-            break
 
     print(
-        f"\n--- Fin de la détection. Total de cartes détectées : "
-        f"{len(final_card_contours)} ---"
+        f"""\n--- Fin de la détection.
+        Total de cartes détectées : {len(final_card_contours)} ---"""
     )
     return final_warped_images, final_card_contours

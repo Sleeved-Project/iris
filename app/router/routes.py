@@ -2,12 +2,12 @@ from fastapi import APIRouter, File, UploadFile, Depends
 from sqlalchemy.orm import Session
 
 from app.controllers import (
+    analysis_controller_v2,
     api_info_controller,
     hash_controller,
     health_controller,
     root_controller,
     scan_controller,
-    analysis_controller,
 )
 from app.db.session import get_db
 
@@ -33,6 +33,7 @@ root_router = APIRouter(tags=["root"])
 health_router = APIRouter(tags=["health"])
 api_v1_router = APIRouter(prefix="/api/v1", tags=["api"])
 images_router = APIRouter(prefix="/api/v1/images", tags=["images"])
+images_router_v2 = APIRouter(prefix="/api/v2/images", tags=["images"])
 
 
 @root_router.get("/")
@@ -104,7 +105,7 @@ async def hash_image_file(file: UploadFile = File(...)):
     return await hash_controller.hash_image(validated_input=validated_input)
 
 
-@images_router.post("/analyze", response_model=AnalysisResponse)
+@images_router_v2.post("/analyze", response_model=AnalysisResponse)
 async def analyze_image_file(
     file: UploadFile = File(...),
     debug: bool = False,
@@ -122,7 +123,7 @@ async def analyze_image_file(
         db: Database session dependency.
     """
     validated_input = await validate_analysis_image_upload(file)
-    return await analysis_controller.analyze_image(
+    return await analysis_controller_v2.analyze_image(
         validated_input=validated_input, debug=debug, db=db  # Pass db to the controller
     )
 
@@ -132,3 +133,4 @@ def include_routes(app):
     app.include_router(health_router)
     app.include_router(api_v1_router)
     app.include_router(images_router)
+    app.include_router(images_router_v2)
