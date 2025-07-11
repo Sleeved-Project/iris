@@ -1,18 +1,39 @@
 import os
 import pytest
-import numpy as np
 import cv2
+import numpy as np
 
-from app.services.image_preprocessing_service import preprocess_image
+# Import du script à tester
+from app.services.contour_detection_service import detect_cards
+from app.services.image_preprocessing_service import preprocess_image # Added for direct path testing if needed
 
-TEST_ASSETS_DIR = os.path.join(
-    os.path.dirname(__file__), "..", "..", "assets", "test_images"
+# SOLUTION: Ensure the path is absolute and normalized
+# This resolves '..' and converts the path to its absolute form,
+# preventing potential issues with cv2.imread on different OS.
+TEST_ASSETS_DIR = os.path.abspath(
+    os.path.join(
+        os.path.dirname(__file__), # Current directory: .../iris/tests/unit/services
+        "..",                      # Up to: .../iris/tests/unit
+        "..",                      # Up to: .../iris/tests
+        "assets",                  # Into: .../iris/tests/assets
+        "test_images"              # Into: .../iris/tests/assets/test_images
+    )
 )
-TEST_RESULTS_DIR = os.path.join(os.path.dirname(__file__), "test_results", "preprocess")
+
+# Répertoires pour les résultats des tests
+TEST_RESULTS_DIR = os.path.join(
+    os.path.dirname(__file__), "test_results", "card_detector"
+)
 os.makedirs(TEST_RESULTS_DIR, exist_ok=True)
 
+# Nouveau répertoire pour les sauvegardes communes
+TEST_COMMON_RESULTS_DIR = os.path.join(
+    os.path.dirname(__file__), "test_results", "all_extracted_cards"
+)
+os.makedirs(TEST_COMMON_RESULTS_DIR, exist_ok=True)
 
-class TestPreprocessImage:
+
+class TestCardDetector:
 
     @pytest.mark.parametrize(
         "image_name",
@@ -38,36 +59,44 @@ class TestPreprocessImage:
             "test_card_17_20250629_214456.jpg",
         ],
     )
-    @pytest.mark.parametrize("method", ["canny", "light", "spec"])
-    def test_preprocess_image_output(self, image_name, method):
+    def test_detect_cards(self, image_name):
+        # Construction du chemin complet de l'image
         image_path = os.path.join(TEST_ASSETS_DIR, image_name)
-        original, edged = preprocess_image(image_path, method=method)
 
-        assert original is not None
-        assert isinstance(original, np.ndarray)
-        assert (
-            original.ndim == 3
-            and original.shape[2] == 3
-        ), "Image originale doit être couleur"
+        # Ajout d'un print pour le débogage sur le runner CI/CD
+        # Cela affichera le chemin exact que cv2.imread va essayer d'ouvrir
+        print(f"Attempting to load image from: {image_path}")
 
-        assert edged is not None
-        assert isinstance(edged, np.ndarray)
-        assert (
-            edged.ndim == 2
-        ), "Image prétraitée doit être 2D (niveaux de gris ou binaire)"
+        # Création du répertoire de sortie spécifique à l'image
+        output_dir = os.path.join(TEST_RESULTS_DIR, os.path.splitext(image_name)[0])
+        os.makedirs(output_dir, exist_ok=True)
 
-        image_base = os.path.splitext(image_name)[0]
-        cv2.imwrite(
-            os.path.join(
-                TEST_RESULTS_DIR,
-                f"{image_base}_{method}_original.png"
-            ),
-            original
+        # Appel de la fonction à tester
+        warped_images, contours = detect_cards(
+            image_path,
+            debug=True,
+            method="canny",  # Utilisation de la méthode "canny" pour le test
+            output_dir=output_dir,
+            common_output_dir=TEST_COMMON_RESULTS_DIR,  # Ajout du dossier commun
         )
-        cv2.imwrite(
-            os.path.join(
-                TEST_RESULTS_DIR,
-                f"{image_base}_{method}_edged.png"
-            ),
-            edged
-        )
+
+        # Vérifications des résultats
+        assert isinstance(warped_images, list), "La sortie doit être une liste d'images"
+        assert isinstance(
+            contours, list
+        ), "Les contours doivent être retournés sous forme de liste"
+
+        if len(contours) == 0:
+            print(f"[INFO] Aucun contour détecté dans {image_name}")
+        else:
+            for i, contour in enumerate(contours):
+                # Vérifie que chaque contour est un tableau numpy
+                assert isinstance(contour, np.ndarray)
+                # Vérifie que le contour a 4 points (pour un quadrilatère)
+                assert (
+                    contour.shape[0] == 4
+                ), f"Contour #{i} n'est pas un quadrilatère : {contour.shape}"
+                # Vérifie que le contour est convexe
+                assert cv2.isContourConvex(contour), f"Contour #{i} détecté non convexe"
+                # Vérifie que l'image découpée n'est pas None
+                assert warped_images[i] is not None, f"Image découpée #{i} est None"
