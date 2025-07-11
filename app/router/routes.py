@@ -33,6 +33,7 @@ root_router = APIRouter(tags=["root"])
 health_router = APIRouter(tags=["health"])
 api_v1_router = APIRouter(prefix="/api/v1", tags=["api"])
 images_router = APIRouter(prefix="/api/v1/images", tags=["images"])
+images_router_v3 = APIRouter(prefix="/api/v3/images", tags=["images"])
 
 
 @root_router.get("/")
@@ -104,7 +105,7 @@ async def hash_image_file(file: UploadFile = File(...)):
     return await hash_controller.hash_image(validated_input=validated_input)
 
 
-@images_router.post("/analyze", response_model=AnalysisResponse)
+@images_router_v3.post("/analyze", response_model=AnalysisResponse)
 async def analyze_image_file(
     file: UploadFile = File(...),
     debug: bool = False,
