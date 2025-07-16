@@ -45,10 +45,9 @@ def _detect_cards_with_method(
     image_area,
 ):
     print(f"--- Tentative de détection avec la méthode '{method}' ---")
-    orig_image, edged = preprocess_image(image_path, method=method)
+    orig_image, edged = preprocess_image(image_path, method=method, debug=debug)
 
     contour_dir = "contour_output"
-    os.makedirs(contour_dir, exist_ok=True)
     image_name = os.path.splitext(os.path.basename(image_path))[0]
 
     contours, _ = cv2.findContours(edged, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -98,6 +97,7 @@ def _detect_cards_with_method(
                 )
 
     if debug and temp_card_contours:
+        os.makedirs(contour_dir, exist_ok=True)
         debug_img = orig_image.copy()
         cv2.drawContours(debug_img, temp_card_contours, -1, (0, 255, 0), 3)
         debug_path = os.path.join(

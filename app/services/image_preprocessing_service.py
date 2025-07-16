@@ -2,14 +2,16 @@ import os
 import cv2
 
 
-def preprocess_image(image_path, method="canny", output_dir="preprocessing_output"):
+def preprocess_image(
+    image_path, method="canny", output_dir="preprocessing_output", debug=False
+):
     image = cv2.imread(image_path)
     if image is None:
         raise FileNotFoundError(f"Image not found: {image_path}")
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    # Parameters definition for each method, avec ajout de "precise"
+    # Paramètres pour chaque méthode de prétraitement, avec ajout de "precise"
     processing_configs = {
         "canny": {
             "gaussian_blur_kernel": (9, 9),
@@ -49,11 +51,11 @@ def preprocess_image(image_path, method="canny", output_dir="preprocessing_outpu
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, config["close_kernel_size"])
     edged = cv2.morphologyEx(edged, cv2.MORPH_CLOSE, kernel)
 
-    # --- Enregistrement du résultat ---
-    os.makedirs(output_dir, exist_ok=True)
-    base_filename = os.path.splitext(os.path.basename(image_path))[0]
-    output_path = os.path.join(output_dir, f"{base_filename}_{method}.png")
-    cv2.imwrite(output_path, edged)
-    print(f"Image prétraitée sauvegardée dans : {output_path}")
+    if debug:
+        os.makedirs(output_dir, exist_ok=True)
+        base_filename = os.path.splitext(os.path.basename(image_path))[0]
+        output_path = os.path.join(output_dir, f"{base_filename}_{method}.png")
+        cv2.imwrite(output_path, edged)
+        print(f"Image prétraitée sauvegardée dans : {output_path}")
 
     return image, edged

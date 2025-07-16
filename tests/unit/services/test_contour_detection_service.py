@@ -5,18 +5,19 @@ import numpy as np
 
 # Import du script à tester
 from app.services.contour_detection_service import detect_cards
-from app.services.image_preprocessing_service import preprocess_image # Added for direct path testing if needed
+# from app.services.image_preprocessing_service import preprocess_image
+# Import commenté car inutilisé, évite l'erreur F401
 
 # SOLUTION: Ensure the path is absolute and normalized
 # This resolves '..' and converts the path to its absolute form,
 # preventing potential issues with cv2.imread on different OS.
 TEST_ASSETS_DIR = os.path.abspath(
     os.path.join(
-        os.path.dirname(__file__), # Current directory: .../iris/tests/unit/services
-        "..",                      # Up to: .../iris/tests/unit
-        "..",                      # Up to: .../iris/tests
-        "assets",                  # Into: .../iris/tests/assets
-        "test_images"              # Into: .../iris/tests/assets/test_images
+        os.path.dirname(__file__),  # Current directory: .../iris/tests/unit/services
+        "..",  # Up to: .../iris/tests/unit
+        "..",  # Up to: .../iris/tests
+        "assets",  # Into: .../iris/tests/assets
+        "test_images",  # Into: .../iris/tests/assets/test_images
     )
 )
 
@@ -82,9 +83,8 @@ class TestCardDetector:
 
         # Vérifications des résultats
         assert isinstance(warped_images, list), "La sortie doit être une liste d'images"
-        assert isinstance(
-            contours, list
-        ), "Les contours doivent être retournés sous forme de liste"
+        assert isinstance(contours, list), """Les contours doivent
+        être retournés sous forme de liste"""
 
         if len(contours) == 0:
             print(f"[INFO] Aucun contour détecté dans {image_name}")
@@ -100,4 +100,3 @@ class TestCardDetector:
                 assert cv2.isContourConvex(contour), f"Contour #{i} détecté non convexe"
                 # Vérifie que l'image découpée n'est pas None
                 assert warped_images[i] is not None, f"Image découpée #{i} est None"
-

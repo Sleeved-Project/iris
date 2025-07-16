@@ -79,7 +79,6 @@ class CardExtractionService:
         return cards
 
 
-# Singleton instancié avec variables .env
 card_extraction_service = CardExtractionService(
     api_key=ROBOFLOW_API_KEY, model_id=MODEL_ID
 )
@@ -91,6 +90,14 @@ async def analyze_image(
     debug: bool = False,
 ) -> AnalysisResponse:
     temp_image_path = None
+    output_dir = "v2_result"
+    matched_cards_dir = os.path.join(output_dir, "matched_cards")
+
+    # Création des dossiers uniquement en mode debug
+    if debug:
+        os.makedirs(output_dir, exist_ok=True)
+        os.makedirs(matched_cards_dir, exist_ok=True)
+
     try:
         if validated_input.file:
             contents = await validated_input.file.read()
@@ -98,7 +105,6 @@ async def analyze_image(
             with open(temp_image_path, "wb") as f:
                 f.write(contents)
         elif validated_input.url:
-            # Pour futur : téléchargement via URL si besoin
             raise NotImplementedError("Analyse à partir d'URL non implémentée.")
 
         if not temp_image_path or not os.path.exists(temp_image_path):
@@ -116,7 +122,6 @@ async def analyze_image(
                 cv2.cvtColor(card_image_np, cv2.COLOR_BGR2RGB)
             )
             card_image_pil_grayscale = card_image_pil.convert("L")
-
             card_hash = image_hash_service.calculate_hashes(card_image_pil_grayscale)
 
             best_match_id: Optional[str] = None
