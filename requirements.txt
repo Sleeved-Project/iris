@@ -11,3 +11,5 @@ requests==2.31.0
 python-multipart==0.0.6
 opencv-python-headless
 numpy
+inference-sdk
+pytesseract
