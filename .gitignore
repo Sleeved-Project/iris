@@ -12,4 +12,7 @@ __pycache__/
 .pytest_cache/
 **.DS_Store
 
-tests/
+# Test output
+contour_output/
+preprocessing_output/
+outputs/
