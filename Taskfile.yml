@@ -120,7 +120,7 @@ tasks:
       - |
         source .env && \
         echo "🔄 Starting import... " && \
-        (docker compose exec -T mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" $MYSQL_DATABASE < ./iris_db_dump.sql 2>&1) && \
+        (docker compose exec -T mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" $MYSQL_DATABASE < ./iris_db_data_dump.sql 2>&1) && \
         echo "✅ Import completed with success !"
 
   db:export:

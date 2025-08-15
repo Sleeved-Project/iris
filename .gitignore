@@ -16,3 +16,6 @@ __pycache__/
 contour_output/
 preprocessing_output/
 outputs/
+
+# Dumps
+iris_db_data_dump.sql
