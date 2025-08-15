@@ -23,17 +23,6 @@ Iris is an image recognition microservice for the Sleeved ecosystem. It provides
 
 - Docker and Docker Compose
 - [Task](https://taskfile.dev/) task runner
-- [Git LFS](https://git-lfs.com/) Large file versionning handler
-
-### Git LFS
-
-Large data files are send on github with [Git LFS](https://git-lfs.com/). Git Large File Storage (LFS) replaces large files such as audio samples, videos, datasets, and graphics with text pointers inside Git, while storing the file contents on a remote server like GitHub.com or GitHub Enterprise.
-
-If you want push large file data run **before push**
-
-```bash
-git lfs push --all origin
-```
 
 ### Getting Started
 
@@ -46,20 +35,20 @@ task setup
 Or individual steps:
 
 ```bash
+task: networks:create
 task build
 task start
-task db:migrate:apply
 ```
 
 ### Import database
 
-For using api you need to import the database dump
+For using api you need to import the database dump this dump contain schema creation
 
 🔗 Download databse dump
 
-- [iris_db_v2.sql](https://sleeved.atlassian.net/wiki/spaces/SleevedConception/pages/26902536/Base+de+donn+es+Iris)
+- [iris_db_v3.sql](https://drive.google.com/file/d/1vcUkHDZKYe39Gf-FOHq3l_TiXbaMfOBv/view?usp=drive_link)
 
-💡 Copy-past and rename this dump into `iris_db_dump.sql` in the root folder of your iris project.
+💡 Copy-past and rename this dump into `iris_db_data_dump.sql` in the root folder of your iris project.
 
 📥 Import the dataset with this command
 
@@ -75,9 +64,15 @@ task: db:import
 task: db:export
 ```
 
-💡 The dump export will be extract into `./iris_db_dump.sql`.
+💡 The dump export will be extract into `./iris_db_data_dump.sql`.
 
-‼️ If you run **looter scraping on atlas** don't forget to send the `iris_db_dump.sql` on github with git lfs.
+### Pass migration
+
+End database setup to run iris migration
+
+```bash
+task db:migrate:apply
+```
 
 ## Available Commands
 
