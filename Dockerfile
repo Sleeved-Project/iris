@@ -2,7 +2,6 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Installer les dépendances système, dont tesseract-ocr
 RUN apt-get update && apt-get install -y \
     libgl1 \
     libglib2.0-0 \
@@ -11,7 +10,7 @@ RUN apt-get update && apt-get install -y \
 
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt --verbose
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY dev-requirements.txt .
 RUN pip install --no-cache-dir -r dev-requirements.txt
