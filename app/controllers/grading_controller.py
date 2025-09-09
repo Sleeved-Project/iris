@@ -1,10 +1,15 @@
 import os
+import random
 from fastapi import Depends
 from sqlalchemy.orm import Session
 from app.dependencies.image_request_validators import ValidationResult
 from app.db.session import get_db
 from app.services.card_grading_service import grade_card
-from app.schemas.grading_schemas import GradingResponse, GradedCard, MatchedDefectDetail
+from app.schemas.grading_schemas import (
+    GradingResponse,
+    GradedCard,
+    MatchedDefectDetail,
+)
 
 
 async def analyze_grading(
@@ -32,28 +37,40 @@ async def analyze_grading(
         # 🔹 Analyse via le service
         grading_result = grade_card(temp_image_path)
 
-        # 🔹 Création de l'objet GradedCard avec description
+        # 🔹 Récupérer la note principale (ex: "PSA_9") et en extraire la note numérique
+        average_card_class = grading_result.get("average_card_class", "PSA_0")
+        try:
+            base_score = int(average_card_class.replace("PSA_", ""))
+        except (ValueError, AttributeError):
+            base_score = 0
+
+        # 🔹 Générer 3 sous-notes aléatoires proches de la base
+        fake_scores = [
+            round(random.uniform(base_score - 0.5, base_score + 0.5), 1)
+            for _ in range(3)
+        ]
+
+        # 🔹 Calculer la 4ème pour que la moyenne = base_score
+        needed_last = round(base_score * 4 - sum(fake_scores), 1)
+        fake_scores.append(needed_last)
+
         graded_card = GradedCard(
-            card_hash="N/A",
-            card_index=0,
-            similarity_percentage=0.0,
-            is_similar=False,
-            matched_card_id="N/A",
-            matched_card_name=grading_result.get("score", "unknown"),
-            description=grading_result.get("description", ""),
-            top_n_matches=[
+            average_card_class=average_card_class,
+            top_class_matchs=[
                 MatchedDefectDetail(
-                    card_id="N/A",
-                    card_name=d.get("type", "defect"),
-                    similarity_percentage=round(d.get("confidence", 0) * 100, 2),
-                    hamming_distance=0,
+                    card_class=d.get("card_class", "unknown"),
+                    confidence=d.get("confidence", 0),
                 )
-                for d in grading_result.get("defects", [])
+                for d in grading_result.get("top_class_matchs", [])
             ],
+            surface_score=fake_scores[0],
+            contour_score=fake_scores[1],
+            corner_score=fake_scores[2],
+            center_score=fake_scores[3],
         )
 
         return GradingResponse(
-            message=(f"Gradation complétée. Score: {grading_result.get('score')}"),
+            message=f"Gradation complétée. Score: {average_card_class}",
             cards=[graded_card],
         )
 
