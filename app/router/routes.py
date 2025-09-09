@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.controllers import (
     analysis_controller,
     analysis_controller_v2,
+    analysis_controller_v3,
     grading_controller,
     api_info_controller,
     hash_controller,
@@ -102,6 +103,20 @@ async def analyze_image_file_v2(
 ):
     validated_input = await validate_analysis_image_upload(file)
     return await analysis_controller_v2.analyze_image(
+        validated_input=validated_input,
+        debug=debug,
+        db=db,
+    )
+
+
+@images_router_v3.post("/analyze", response_model=AnalysisResponse)
+async def analyze_image_file_v3(
+    file: UploadFile = File(...),
+    debug: bool = Form(False),
+    db: Session = Depends(get_db),
+):
+    validated_input = await validate_analysis_image_upload(file)
+    return await analysis_controller_v3.analyze_image(
         validated_input=validated_input,
         debug=debug,
         db=db,
