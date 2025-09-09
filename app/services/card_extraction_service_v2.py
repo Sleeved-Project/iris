@@ -30,8 +30,8 @@ OUTPUT_HEIGHT = int(OUTPUT_WIDTH * 1.4)  # Standard card ratio
 MAX_WORKERS = min(4, os.cpu_count() or 2)
 
 # API configuration
-ROBOFLOW_API_KEY = os.getenv("ROBOFLOW_API_KEY") or "dummy_key"
-MODEL_ID = os.getenv("ROBOFLOW_MODEL_OBB_ID") or "dummy_model_id"
+ROBOFLOW_API_KEY = os.getenv("ROBOFLOW_API_KEY_V2") or "dummy_key"
+MODEL_ID = os.getenv("ROBOFLOW_MODEL_ID_V2") or "dummy_model_id"
 
 
 class CardExtractionService:

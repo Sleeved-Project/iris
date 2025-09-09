@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.controllers import (
     analysis_controller,
     analysis_controller_v2,
+    grading_controller,
     api_info_controller,
     hash_controller,
     health_controller,
@@ -17,45 +18,53 @@ from app.dependencies.image_request_validators import (
     validate_image_upload,
     ValidationResult,
 )
-
 from app.dependencies.scan_request_validators import validate_scan_image_upload
 from app.dependencies.analysis_request_validators import validate_analysis_image_upload
 
 from app.schemas.image_schemas import ImageHashResponse, ImageHashRequest
 from app.schemas.scan_schemas import ScanResponse
 from app.schemas.analysis_schemas import AnalysisResponse
+from app.schemas.grading_schemas import GradingResponse
 
 
+# ------------------- Routers ------------------- #
 root_router = APIRouter(tags=["root"])
 health_router = APIRouter(tags=["health"])
 api_v1_router = APIRouter(prefix="/api/v1", tags=["api"])
 images_router = APIRouter(prefix="/api/v1/images", tags=["images"])
 images_router_v2 = APIRouter(prefix="/api/v2/images", tags=["images"])
+images_router_v3 = APIRouter(prefix="/api/v3/images", tags=["images"])
 
 
+# ------------------- Root ------------------- #
 @root_router.get("/")
 def root():
     return root_controller.get_root()
 
 
+# ------------------- Health ------------------- #
 @health_router.get("/health")
 def health(db: Session = Depends(get_db)):
     return health_controller.check_health(db)
 
 
+# ------------------- API Info ------------------- #
 @api_v1_router.get("/")
 def api_info():
     return api_info_controller.get_api_info()
 
 
+# ------------------- Scan ------------------- #
 @images_router.post("/scan/detect", response_model=ScanResponse)
 async def scan_image_file(file: UploadFile = File(...), debug: bool = False):
     validated_input = await validate_scan_image_upload(file)
     return await scan_controller.detect_card(
-        validated_input=validated_input, debug=debug
+        validated_input=validated_input,
+        debug=debug,
     )
 
 
+# ------------------- Image Hashing ------------------- #
 @images_router.post("/hash/url", response_model=ImageHashResponse)
 async def hash_image_url(request: ImageHashRequest):
     url = await validate_image_url(str(request.url))
@@ -70,6 +79,7 @@ async def hash_image_file(file: UploadFile = File(...)):
     return await hash_controller.hash_image(validated_input=validated_input)
 
 
+# ------------------- Card Analysis ------------------- #
 @images_router.post("/analyze", response_model=AnalysisResponse)
 async def analyze_image_file(
     file: UploadFile = File(...),
@@ -78,7 +88,9 @@ async def analyze_image_file(
 ):
     validated_input = await validate_analysis_image_upload(file)
     return await analysis_controller.analyze_image(
-        validated_input=validated_input, debug=debug, db=db
+        validated_input=validated_input,
+        debug=debug,
+        db=db,
     )
 
 
@@ -90,13 +102,32 @@ async def analyze_image_file_v2(
 ):
     validated_input = await validate_analysis_image_upload(file)
     return await analysis_controller_v2.analyze_image(
-        validated_input=validated_input, debug=debug, db=db
+        validated_input=validated_input,
+        debug=debug,
+        db=db,
     )
 
 
+# ------------------- Grading ------------------- #
+@images_router_v3.post("/grade", response_model=GradingResponse)
+async def grade_image_file(
+    file: UploadFile = File(...),
+    debug: bool = Form(False),
+    db: Session = Depends(get_db),
+):
+    validated_input = await validate_analysis_image_upload(file)
+    return await grading_controller.analyze_grading(
+        validated_input=validated_input,
+        debug=debug,
+        db=db,
+    )
+
+
+# ------------------- Register Routers ------------------- #
 def include_routes(app):
     app.include_router(root_router)
     app.include_router(health_router)
     app.include_router(api_v1_router)
     app.include_router(images_router)
     app.include_router(images_router_v2)
+    app.include_router(images_router_v3)
