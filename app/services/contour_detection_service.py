@@ -46,8 +46,9 @@ def _detect_cards_with_method(
 ):
     print(f"--- Tentative de détection avec la méthode '{method}' ---")
 
-    # 🔹 preprocess_image ne prend plus debug/method
-    orig_image = preprocess_image(image_path)
+    # 🔹 preprocess_image renvoie maintenant un tuple (image, temp_path)
+    orig_image, _ = preprocess_image(image_path)
+    
     # 🔹 Calcul des bords pour la détection
     gray = cv2.cvtColor(orig_image, cv2.COLOR_BGR2GRAY)
     edged = cv2.Canny(gray, 100, 200)
@@ -95,9 +96,7 @@ def _detect_cards_with_method(
             if debug and common_output_dir:
                 os.makedirs(common_output_dir, exist_ok=True)
                 cv2.imwrite(
-                    os.path.join(
-                        common_output_dir, f"{image_name}_card_{method}_{i}.png"
-                    ),
+                    os.path.join(common_output_dir, f"{image_name}_card_{method}_{i}.png"),
                     warped,
                 )
 
@@ -105,9 +104,7 @@ def _detect_cards_with_method(
         os.makedirs(contour_dir, exist_ok=True)
         debug_img = orig_image.copy()
         cv2.drawContours(debug_img, temp_card_contours, -1, (0, 255, 0), 3)
-        debug_path = os.path.join(
-            contour_dir, f"{image_name}_contours_drawn_{method}.png"
-        )
+        debug_path = os.path.join(contour_dir, f"{image_name}_contours_drawn_{method}.png")
         cv2.imwrite(debug_path, debug_img)
         print(f"Image avec contours dessinés sauvegardée dans : {debug_path}")
 
@@ -123,8 +120,8 @@ def detect_cards(
     output_dir=None,
     common_output_dir=None,
 ):
-    # 🔹 preprocess_image ne prend plus method/debug
-    image = preprocess_image(image_path)
+    # 🔹 preprocess_image renvoie maintenant un tuple (image, temp_path)
+    image, _ = preprocess_image(image_path)
     orig = image.copy()
     h, w = image.shape[:2]
     image_area = h * w
@@ -162,13 +159,9 @@ def detect_cards(
                 final_warped_images = temp_warped_images
                 final_card_contours = temp_card_contours
                 print(
-                    f"""Méthode '{current_method}' a détecté
-                    {len(final_card_contours)} carte(s). Arrêt de la recherche."""
+                    f"Méthode '{current_method}' a détecté {len(final_card_contours)} carte(s). Arrêt de la recherche."
                 )
                 break
 
-    print(
-        f"""\n--- Fin de la détection.
-        Total de cartes détectées : {len(final_card_contours)} ---"""
-    )
+    print(f"\n--- Fin de la détection. Total de cartes détectées : {len(final_card_contours)} ---")
     return final_warped_images, final_card_contours
