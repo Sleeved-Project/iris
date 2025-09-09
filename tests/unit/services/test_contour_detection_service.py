@@ -37,12 +37,12 @@ class TestCardDetector:
         output_dir = os.path.join(TEST_RESULTS_DIR, os.path.splitext(image_name)[0])
         os.makedirs(output_dir, exist_ok=True)
 
+        # Appel corrigé : plus d'arguments "debug" ou "method" pour preprocess_image
         warped_images, contours = detect_cards(
             image_path,
-            debug=True,
             method="canny",
             output_dir=output_dir,
-            common_output_dir=TEST_COMMON_RESULTS_DIR,  # Ajout du dossier commun
+            common_output_dir=TEST_COMMON_RESULTS_DIR,
         )
 
         # Vérifications
