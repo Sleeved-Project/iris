@@ -95,7 +95,9 @@ def _detect_cards_with_method(
             if debug and common_output_dir:
                 os.makedirs(common_output_dir, exist_ok=True)
                 cv2.imwrite(
-                    os.path.join(common_output_dir, f"{image_name}_card_{method}_{i}.png"),
+                    os.path.join(
+                        common_output_dir, f"{image_name}_card_{method}_{i}.png"
+                    ),
                     warped,
                 )
 
@@ -103,7 +105,9 @@ def _detect_cards_with_method(
         os.makedirs(contour_dir, exist_ok=True)
         debug_img = orig_image.copy()
         cv2.drawContours(debug_img, temp_card_contours, -1, (0, 255, 0), 3)
-        debug_path = os.path.join(contour_dir, f"{image_name}_contours_drawn_{method}.png")
+        debug_path = os.path.join(
+            contour_dir, f"{image_name}_contours_drawn_{method}.png"
+        )
         cv2.imwrite(debug_path, debug_img)
         print(f"Image avec contours dessinés sauvegardée dans : {debug_path}")
 
