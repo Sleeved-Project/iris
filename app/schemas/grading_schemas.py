@@ -42,9 +42,7 @@ class GradedCard(BaseModel):
 
 
 class GradingResponse(BaseModel):
-    message: str = Field(
-        ..., description="Message de statut de l'analyse de grading."
-    )
+    message: str = Field(..., description="Message de statut de l'analyse de grading.")
     cards: List[GradedCard] = Field(
         ...,
         description="Cartes détectées avec leur score PSA et sous-notes.",
