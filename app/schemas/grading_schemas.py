@@ -4,9 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class MatchedDefectDetail(BaseModel):
-    card_id: str = Field(
-        ..., description="ID of the matched card from the database."
-    )
+    card_id: str = Field(..., description="ID of the matched card from the database.")
     card_name: Optional[str] = Field(
         None, description="Name of the matched card from the database (if available)."
     )

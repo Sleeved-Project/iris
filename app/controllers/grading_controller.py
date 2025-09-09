@@ -53,9 +53,7 @@ async def analyze_grading(
         )
 
         return GradingResponse(
-            message=(
-                f"Gradation complétée. Score: {grading_result.get('score')}"
-            ),
+            message=(f"Gradation complétée. Score: {grading_result.get('score')}"),
             cards=[graded_card],
         )
 
