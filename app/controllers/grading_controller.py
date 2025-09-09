@@ -37,12 +37,9 @@ async def analyze_grading(
         # 🔹 Analyse via le service
         grading_result = grade_card(temp_image_path)
 
-        # 🔹 Récupérer la note principale (ex: "PSA_9") et en extraire la note numérique
-        average_card_class = grading_result.get("average_card_class", "PSA_0")
-        try:
-            base_score = int(average_card_class.replace("PSA_", ""))
-        except (ValueError, AttributeError):
-            base_score = 0
+        # 🔹 Récupérer la note principale (ex: 9)
+        average_card_score = grading_result.get("average_card_score", 0)
+        base_score = int(average_card_score) if average_card_score else 0
 
         # 🔹 Générer 3 sous-notes aléatoires proches de la base
         fake_scores = [
@@ -55,7 +52,7 @@ async def analyze_grading(
         fake_scores.append(needed_last)
 
         graded_card = GradedCard(
-            average_card_class=average_card_class,
+            average_card_score=average_card_score,
             top_class_matchs=[
                 MatchedDefectDetail(
                     card_class=d.get("card_class", "unknown"),
@@ -70,7 +67,7 @@ async def analyze_grading(
         )
 
         return GradingResponse(
-            message=f"Gradation complétée. Score: {average_card_class}",
+            message=f"Gradation complétée. Score: {average_card_score}",
             cards=[graded_card],
         )
 

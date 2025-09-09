@@ -13,9 +13,9 @@ class MatchedDefectDetail(BaseModel):
 
 
 class GradedCard(BaseModel):
-    average_card_class: Optional[str] = Field(
+    average_card_score: Optional[int] = Field(
         None,
-        description="Classe PSA finale calculée (ex: PSA_9).",
+        description="Classe PSA finale (ex: 9 pour PSA_9).",
     )
     top_class_matchs: List[MatchedDefectDetail] = Field(
         [],

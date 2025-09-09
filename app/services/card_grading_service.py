@@ -70,6 +70,6 @@ def grade_card(image_path: str) -> Dict[str, Any]:
 
     return {
         "weighted": weighted,
-        "average_card_class": f"PSA_{final_psa}" if final_psa else "unknown",
+        "average_card_score": final_psa if final_psa else 0,
         "top_class_matchs": top_class_matchs,
     }
