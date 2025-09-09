@@ -45,7 +45,12 @@ def _detect_cards_with_method(
     image_area,
 ):
     print(f"--- Tentative de détection avec la méthode '{method}' ---")
-    orig_image, edged = preprocess_image(image_path, method=method, debug=debug)
+
+    # 🔹 preprocess_image ne prend plus debug/method
+    orig_image = preprocess_image(image_path)
+    # 🔹 Calcul des bords pour la détection
+    gray = cv2.cvtColor(orig_image, cv2.COLOR_BGR2GRAY)
+    edged = cv2.Canny(gray, 100, 200)
 
     contour_dir = "contour_output"
     image_name = os.path.splitext(os.path.basename(image_path))[0]
@@ -90,9 +95,7 @@ def _detect_cards_with_method(
             if debug and common_output_dir:
                 os.makedirs(common_output_dir, exist_ok=True)
                 cv2.imwrite(
-                    os.path.join(
-                        common_output_dir, f"{image_name}_card_{method}_{i}.png"
-                    ),
+                    os.path.join(common_output_dir, f"{image_name}_card_{method}_{i}.png"),
                     warped,
                 )
 
@@ -100,9 +103,7 @@ def _detect_cards_with_method(
         os.makedirs(contour_dir, exist_ok=True)
         debug_img = orig_image.copy()
         cv2.drawContours(debug_img, temp_card_contours, -1, (0, 255, 0), 3)
-        debug_path = os.path.join(
-            contour_dir, f"{image_name}_contours_drawn_{method}.png"
-        )
+        debug_path = os.path.join(contour_dir, f"{image_name}_contours_drawn_{method}.png")
         cv2.imwrite(debug_path, debug_img)
         print(f"Image avec contours dessinés sauvegardée dans : {debug_path}")
 
@@ -118,7 +119,8 @@ def detect_cards(
     output_dir=None,
     common_output_dir=None,
 ):
-    image, _ = preprocess_image(image_path, method="canny")
+    # 🔹 preprocess_image ne prend plus method/debug
+    image = preprocess_image(image_path)
     orig = image.copy()
     h, w = image.shape[:2]
     image_area = h * w
