@@ -45,7 +45,13 @@ def _detect_cards_with_method(
     image_area,
 ):
     print(f"--- Tentative de détection avec la méthode '{method}' ---")
-    orig_image, edged = preprocess_image(image_path, method=method, debug=debug)
+
+    # 🔹 preprocess_image renvoie maintenant un tuple (image, temp_path)
+    orig_image, _ = preprocess_image(image_path)
+
+    # 🔹 Calcul des bords pour la détection
+    gray = cv2.cvtColor(orig_image, cv2.COLOR_BGR2GRAY)
+    edged = cv2.Canny(gray, 100, 200)
 
     contour_dir = "contour_output"
     image_name = os.path.splitext(os.path.basename(image_path))[0]
@@ -118,7 +124,8 @@ def detect_cards(
     output_dir=None,
     common_output_dir=None,
 ):
-    image, _ = preprocess_image(image_path, method="canny")
+    # 🔹 preprocess_image renvoie maintenant un tuple (image, temp_path)
+    image, _ = preprocess_image(image_path)
     orig = image.copy()
     h, w = image.shape[:2]
     image_area = h * w
@@ -156,13 +163,13 @@ def detect_cards(
                 final_warped_images = temp_warped_images
                 final_card_contours = temp_card_contours
                 print(
-                    f"""Méthode '{current_method}' a détecté
-                    {len(final_card_contours)} carte(s). Arrêt de la recherche."""
+                    f"""Méthode '{current_method}' a détecté {len(final_card_contours)}
+                    carte(s). Arrêt de la recherche."""
                 )
                 break
 
     print(
-        f"""\n--- Fin de la détection.
-        Total de cartes détectées : {len(final_card_contours)} ---"""
+        f"""\n--- Fin de la détection. Total de cartes
+        détectées : {len(final_card_contours)} ---"""
     )
     return final_warped_images, final_card_contours
