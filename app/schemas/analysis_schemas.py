@@ -39,6 +39,11 @@ class AnalyzedCard(BaseModel):
         description="Name of the best matching card from the database (if available).",
     )
 
+    extracted_temp_image_url: Optional[str] = Field(
+        None,
+        description="URL to the extracted card image",
+    )
+
     # New field to store the top N matches
     top_n_matches: List[MatchedCardDetail] = Field(
         [], description="Top N closest matches from the database, sorted by similarity."

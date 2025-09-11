@@ -13,3 +13,4 @@ opencv-python-headless
 numpy
 inference-sdk
 pytesseract
+cloudinary

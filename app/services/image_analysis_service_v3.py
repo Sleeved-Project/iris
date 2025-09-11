@@ -1,5 +1,7 @@
 import os
 import requests
+import uuid
+import time
 from typing import List, Optional
 import cv2
 from PIL import Image
@@ -13,12 +15,30 @@ from app.schemas.analysis_schemas import (
 )
 from app.db.models.card_hash import CardHash
 from app.services.card_extraction_service_v3 import card_extraction_service
+from app.services.cloudinary_storage_service import cloudinary_storage
 
 HASH_SIZE_DIMENSION = 16
 BITS_PER_HASH = HASH_SIZE_DIMENSION * HASH_SIZE_DIMENSION
 TOTAL_HASH_BITS = BITS_PER_HASH * 2
 SIMILARITY_HAMMING_THRESHOLD = 90
 TOP_N_RESULTS = 5
+
+
+def save_extracted_image(image_np, filename_base: str) -> str:
+    """
+    Save the extracted image to Cloudinary and return its URL.
+    """
+    unique_id = f"{filename_base}_{uuid.uuid4().hex[:8]}_{int(time.time())}"
+
+    image_url = cloudinary_storage.upload_image(
+        image_np,
+        folder="tmp_extracted_cards",
+        public_id=unique_id,
+        format="jpg",
+        ttl_minutes=15,
+    )
+
+    return image_url
 
 
 def analyze_image_logic(
@@ -42,6 +62,7 @@ def analyze_image_logic(
         best_card_result = None
         best_similarity_percentage = -1.0
         best_card_i = i
+        best_card_image_np = None
 
         worst_card_result = None
         worst_similarity_percentage = 101.0
@@ -104,6 +125,7 @@ def analyze_image_logic(
             ):
                 is_similar = True
 
+            extracted_temp_image_url = None
             analyzed = AnalyzedCard(
                 card_hash=card_hash,
                 card_index=i // 2,
@@ -112,17 +134,25 @@ def analyze_image_logic(
                 matched_card_id=best_match_id,
                 matched_card_name=best_match_name,
                 top_n_matches=top_n_results,
+                extracted_temp_image_url=extracted_temp_image_url,
             )
 
             if similarity_percentage > best_similarity_percentage:
                 best_similarity_percentage = similarity_percentage
                 best_card_result = analyzed
                 best_card_i = i + j
+                best_card_image_np = card_image_np.copy()
 
             if similarity_percentage < worst_similarity_percentage:
                 worst_similarity_percentage = similarity_percentage
                 worst_card_result = analyzed
                 worst_card_i = i + j
+
+        if best_card_image_np is not None and best_card_result:
+            image_url = save_extracted_image(
+                best_card_image_np, f"card_{source_filename}_{best_card_i}"
+            )
+            best_card_result.extracted_temp_image_url = image_url
 
         def download_and_save(card_result, card_index, output_dir):
             if not (card_result and card_result.matched_card_id):
@@ -167,7 +197,6 @@ def analyze_image_logic(
 
         if best_card_result:
             analyzed_cards.append(best_card_result)
-        # Tu peux aussi ajouter la carte la moins similaire ici si besoin
 
     return AnalysisResponse(
         message=(
