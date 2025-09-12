@@ -47,8 +47,11 @@ def analyze_image_logic(
     debug: bool = False,
     output_dir: str = "final_output",
     output_dir_low: str = "final_output2",
+    threshold: Optional[float] = None,
 ) -> AnalysisResponse:
-    extracted_cards = card_extraction_service.extract_cards_from_image(image_path)
+    extracted_cards = card_extraction_service.extract_cards_from_image(
+        image_path, threshold=threshold
+    )
     if not extracted_cards or not isinstance(extracted_cards, list):
         raise ValueError("Extraction des cartes échouée : aucune carte extraite.")
 
