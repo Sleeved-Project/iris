@@ -7,7 +7,6 @@ from app.db.session import get_db
 from app.services.card_grading_service import grade_card
 from app.schemas.grading_schemas import (
     GradingResponse,
-    GradedCard,
     MatchedDefectDetail,
 )
 
@@ -51,7 +50,8 @@ async def analyze_grading(
         needed_last = round(base_score * 4 - sum(fake_scores), 1)
         fake_scores.append(needed_last)
 
-        graded_card = GradedCard(
+        return GradingResponse(
+            message=f"Gradation complétée. Score: {average_grade_score}",
             average_grade_score=average_grade_score,
             top_class_matchs=[
                 MatchedDefectDetail(
@@ -64,11 +64,6 @@ async def analyze_grading(
             contour_score=fake_scores[1],
             corner_score=fake_scores[2],
             center_score=fake_scores[3],
-        )
-
-        return GradingResponse(
-            message=f"Gradation complétée. Score: {average_grade_score}",
-            grades=[graded_card],
         )
 
     except Exception as e:

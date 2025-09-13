@@ -12,7 +12,8 @@ class MatchedDefectDetail(BaseModel):
     )
 
 
-class GradedCard(BaseModel):
+class GradingResponse(BaseModel):
+    message: str = Field(..., description="Message de statut de l'analyse de grading.")
     average_grade_score: Optional[int] = Field(
         None,
         description="Classe PSA finale (ex: 9 pour PSA_9).",
@@ -38,12 +39,4 @@ class GradedCard(BaseModel):
     center_score: float = Field(
         8.7,
         description="Note factice pour la qualité du centrage.",
-    )
-
-
-class GradingResponse(BaseModel):
-    message: str = Field(..., description="Message de statut de l'analyse de grading.")
-    grades: List[GradedCard] = Field(
-        ...,
-        description="Cartes détectées avec leur score PSA et sous-notes.",
     )
