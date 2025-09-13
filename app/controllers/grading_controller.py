@@ -38,8 +38,8 @@ async def analyze_grading(
         grading_result = grade_card(temp_image_path)
 
         # 🔹 Récupérer la note principale (ex: 9)
-        average_card_score = grading_result.get("average_card_score", 0)
-        base_score = int(average_card_score) if average_card_score else 0
+        average_grade_score = grading_result.get("average_card_score", 0)
+        base_score = int(average_grade_score) if average_grade_score else 0
 
         # 🔹 Générer 3 sous-notes aléatoires proches de la base
         fake_scores = [
@@ -52,10 +52,10 @@ async def analyze_grading(
         fake_scores.append(needed_last)
 
         graded_card = GradedCard(
-            average_card_score=average_card_score,
+            average_grade_score=average_grade_score,
             top_class_matchs=[
                 MatchedDefectDetail(
-                    card_class=d.get("card_class", "unknown"),
+                    grade_class=d.get("card_class", "unknown"),
                     confidence=d.get("confidence", 0),
                 )
                 for d in grading_result.get("top_class_matchs", [])
@@ -67,8 +67,8 @@ async def analyze_grading(
         )
 
         return GradingResponse(
-            message=f"Gradation complétée. Score: {average_card_score}",
-            cards=[graded_card],
+            message=f"Gradation complétée. Score: {average_grade_score}",
+            grades=[graded_card],
         )
 
     except Exception as e:
