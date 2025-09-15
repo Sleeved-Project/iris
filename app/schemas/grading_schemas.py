@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 
 class MatchedDefectDetail(BaseModel):
-    card_class: Optional[str] = Field(
+    grade_class: Optional[str] = Field(
         None,
         description="Classe détectée (ex: PSA_8, PSA_9).",
     )
@@ -12,8 +12,9 @@ class MatchedDefectDetail(BaseModel):
     )
 
 
-class GradedCard(BaseModel):
-    average_card_score: Optional[int] = Field(
+class GradingResponse(BaseModel):
+    message: str = Field(..., description="Message de statut de l'analyse de grading.")
+    average_grade_score: Optional[int] = Field(
         None,
         description="Classe PSA finale (ex: 9 pour PSA_9).",
     )
@@ -38,12 +39,4 @@ class GradedCard(BaseModel):
     center_score: float = Field(
         8.7,
         description="Note factice pour la qualité du centrage.",
-    )
-
-
-class GradingResponse(BaseModel):
-    message: str = Field(..., description="Message de statut de l'analyse de grading.")
-    cards: List[GradedCard] = Field(
-        ...,
-        description="Cartes détectées avec leur score PSA et sous-notes.",
     )
