@@ -1,5 +1,6 @@
-from fastapi import APIRouter, File, UploadFile, Depends, Form
+from fastapi import APIRouter, File, UploadFile, Depends, Form, Query
 from sqlalchemy.orm import Session
+from typing import Optional
 
 from app.controllers import (
     analysis_controller,
@@ -113,11 +114,15 @@ async def analyze_image_file_v2(
 async def analyze_image_file_v3(
     file: UploadFile = File(...),
     debug: bool = Form(False),
+    threshold: Optional[float] = Query(
+        None, description="Confidence threshold (0.0-1.0)"
+    ),
     db: Session = Depends(get_db),
 ):
     validated_input = await validate_analysis_image_upload(file)
     return await analysis_controller_v3.analyze_image(
         validated_input=validated_input,
+        threshold=threshold,
         debug=debug,
         db=db,
     )

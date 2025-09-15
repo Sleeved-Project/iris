@@ -146,25 +146,40 @@ class CardExtractionService:
 
         return cv2.rotate(img, cv2.ROTATE_180) if bottom_mass > top_mass else img
 
-    def extract_cards_from_image(self, image_path: str) -> List[np.ndarray]:
+    def extract_cards_from_image(
+        self, image_path: str, threshold: Optional[float] = None
+    ) -> List[np.ndarray]:
+        effective_threshold = (
+            threshold if threshold is not None else self.confidence_threshold
+        )
         image_name = os.path.basename(image_path)
         image = cv2.imread(image_path)
         if image is None:
             raise FileNotFoundError(f"Image introuvable : {image_path}")
 
         result_json = self._infer_via_http(image_path)
+        predictions = result_json.get("predictions", [])
+
+        if not predictions:
+            print("Aucune prédiction trouvée dans le résultat de Roboflow.")
+            return []
+
         detections = sv.Detections.from_inference(result_json)
         extracted_cards = []
+
+        if not hasattr(detections, "mask") or detections.mask is None:
+            print("Pas de masques dans les détections.")
+            return []
 
         scores = [
             pred.get("confidence", 0) for pred in result_json.get("predictions", [])
         ]
 
         for i, (mask, confidence) in enumerate(zip(detections.mask, scores)):
-            if confidence < self.confidence_threshold:
+            if confidence < effective_threshold:
                 print(
                     f"""Détection {i} ignorée : confiance
-                    {confidence:.2f} < seuil {self.confidence_threshold}"""
+                    {confidence:.2f} < seuil {effective_threshold}"""
                 )
                 continue
 

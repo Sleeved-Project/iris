@@ -4,11 +4,16 @@ from app.dependencies.image_request_validators import ValidationResult
 from app.db.session import get_db
 from app.schemas.analysis_schemas import AnalysisResponse
 from app.services.image_analysis_service_v3 import analyze_image_logic
+from typing import Optional
+from fastapi import Query
 import os
 
 
 async def analyze_image(
     validated_input: ValidationResult,
+    threshold: Optional[float] = Query(
+        None, description="Confidence threshold (0.0-1.0)"
+    ),
     db: Session = Depends(get_db),
     debug: bool = False,
 ) -> AnalysisResponse:
@@ -34,6 +39,7 @@ async def analyze_image(
 
         return analyze_image_logic(
             image_path=temp_image_path,
+            threshold=threshold,
             db=db,
             debug=debug,
             output_dir=output_dir,
