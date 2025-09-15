@@ -26,6 +26,7 @@ jobs:
           context: .
           push: true
           platforms: linux/amd64
+          outputs: type=image   # <-- forcer le push comme image unique
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}-amd64
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/iris:cache-amd64
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/iris:cache-amd64,mode=max
@@ -51,6 +52,7 @@ jobs:
           context: .
           push: true
           platforms: linux/arm64
+          outputs: type=image
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}-arm64
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/iris:cache-arm64
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/iris:cache-arm64,mode=max
@@ -67,9 +69,6 @@ jobs:
 
       - name: Create and push multi-arch manifest
         run: |
-          docker manifest rm ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }} || true
-          docker manifest rm ${{ secrets.DOCKERHUB_USERNAME }}/iris:latest || true
-
           docker manifest create \
             ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }} \
             --amend ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}-amd64 \
