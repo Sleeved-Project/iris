@@ -27,7 +27,7 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}-amd64
+            ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/iris:cache-amd64
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/iris:cache-amd64,mode=max
 
@@ -53,7 +53,7 @@ jobs:
           push: true
           platforms: linux/arm64
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}-arm64
+            ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/iris:cache-arm
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/iris:cache-arm,mode=max
 
