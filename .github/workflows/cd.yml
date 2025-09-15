@@ -7,6 +7,8 @@ on:
 jobs:
   build-amd64:
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.build.outputs.image }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,17 +23,21 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push amd64 image
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           platforms: linux/amd64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}-amd64
+          outputs: type=image
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}-amd64-tmp
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/iris:cache-amd64
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/iris:cache-amd64,mode=max
 
   build-arm64:
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.build.outputs.image }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -46,12 +52,14 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push arm64 image
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           platforms: linux/arm64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}-arm64
+          outputs: type=image
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}-arm64-tmp
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/iris:cache-arm64
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/iris:cache-arm64,mode=max
 
@@ -65,24 +73,24 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Create and push multi-arch manifest
+      - name: Remove old manifests (ignore errors)
         run: |
-          # Supprimer les manifest lists existants pour éviter les conflits
           docker manifest rm ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }} || true
           docker manifest rm ${{ secrets.DOCKERHUB_USERNAME }}/iris:latest || true
 
-          # Créer manifest multi-arch
+      - name: Create and push multi-arch manifest
+        run: |
           docker manifest create \
             ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }} \
-            --amend ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}-amd64 \
-            --amend ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}-arm64
+            --amend ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}-amd64-tmp \
+            --amend ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}-arm64-tmp
 
           docker manifest push ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}
 
           docker manifest create \
             ${{ secrets.DOCKERHUB_USERNAME }}/iris:latest \
-            --amend ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}-amd64 \
-            --amend ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}-arm64
+            --amend ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}-amd64-tmp \
+            --amend ${{ secrets.DOCKERHUB_USERNAME }}/iris:${{ github.ref_name }}-arm64-tmp
 
           docker manifest push ${{ secrets.DOCKERHUB_USERNAME }}/iris:latest
 
